@@ -42,6 +42,12 @@ require_once ('config.php');
 require_once ('classes/ec.class.php');
 
 /**
+ * Inclui o arquivo com a classe BadWords
+ */
+require_once ('classes/bw.class.php');
+
+
+/**
  *Inclui o arquivo de funções adicionais
  */
 require_once('functions.inc.php');
@@ -49,7 +55,7 @@ require_once('functions.inc.php');
 /**
  * Verifica se o chat está bloqueado
  */
-if (EC_BLOQ != 0 || $cfg['EC_BLOQ'] != 0) {
+if (EC_BLOQUEAR != 0) {
     exit;    
 }
 
@@ -58,31 +64,31 @@ if (EC_BLOQ != 0 || $cfg['EC_BLOQ'] != 0) {
  * Inicia a sessão atual
  */
 session_start();
- //echo '<pre>session<br>';print_r($_SESSION);echo '<br>cookie<br>';print_r($HTTP_COOKIE_VARS);exit;
+ //echo '<pre>session<br>';print_r($_SESSION);echo '<br>cookie<br>';print_r($_COOKIE);exit;
 /**
  * Corige o número máximo de salas em caso de erro
  */
-if (EC_SALAS > 30) {
-	define('EC_SALAS', 30);
+if (EC_NUM_SALAS > 25) {
+	define('EC_NUM_SALAS', 30);
 }
 
 /**
  * Corrige o número da sala em caso de erro
  */
-if ($HTTP_GET_VARS['sala'] >= EC_SALAS) {
-	$HTTP_GET_VARS['sala'] = EC_SALAS;
+if ($_GET['sala'] >= EC_NUM_SALAS) {
+	$_GET['sala'] = EC_NUM_SALAS;
 }
-if ($HTTP_GET_VARS['sala'] < 1 ) {
-    $HTTP_GET_VARS['sala'] = 1;
+if ($_GET['sala'] < 1 ) {
+    $_GET['sala'] = 1;
 }
-if ($HTTP_GET_VARS['sala'] == '' ) {
-    $HTTP_GET_VARS['sala'] = 1;
+if ($_GET['sala'] == '' ) {
+    $_GET['sala'] = 1;
 }
 
 /**
  * Configura o arquivo da sala atual, define suaconstante e apaga a variável
  */
-$atual =  EC_PREFIX . 'sala' . $HTTP_GET_VARS['sala'];
+$atual =  EC_PREFIX . 'sala' . $_GET['sala'];
 $arq_atual = 'texto/' . $atual . '.txt';
 define('EC_ARQ',$atual);
 define('EC_ATUAL_ARQ', $arq_atual);
@@ -95,43 +101,80 @@ unset($arq_atual);
 $ec = ec(EC_ATUAL_ARQ,$lng['anonimo'],$lng['admin'],$lng['entrou'],$lng['saiu']);
 
 /**
+ * Inicia a classe Enygmata Chat
+ */
+$bw = new BadWords;
+
+/**
  * Bloqueia o chat se configurado para isso
  */
-if(EC_BLOQ == 1) {
-    $ec->ec_msg2($lng['travado'],$lng['noticia']);
+if(EC_BLOQUEAR == 1) {
+    $ec->msg2($lng['travado'],$lng['noticia']);
 	exit;
+}
+
+/**
+ * Salva o tema do usuário
+ */
+if($_POST['thema']) {
+    $_SESSION['style'] = $_POST['thema'];
+}
+
+
+/**
+ * Seta as palavras ruins
+ */
+if(EC_BW_SEARCH) {
+    $bw->setWords(explode(',',EC_BW_SEARCH));
+}
+
+/**
+ * Gerencia as variáveis de post e session para que não oorram erros
+ */
+if($_POST['nick'] && !$_POST['texto']) {
+    /**
+     * Registrar nick
+     */
+     $_POST['nick'] = $bw->goChanges($_POST['nick']);
+    $ec->regNick($_POST['nick']);
+    unset($_POST['nick']);
+}elseif($_POST['nick'] && $_POST['texto']){
+    /**
+     * Registrar Nick ezvaziar o buffer e cria mensagem
+     */
+    $_POST['nick'] = $bw->goChanges($_POST['nick']);
+    $ec->regNick($_POST['nick']);
+    unset($_POST['nick']);
+    $_POST['texto'] = $bw->goChanges($_POST['texto']);
+    $ec->msg($_SESSION['nick'], $_POST['texto']);
+    unset($_POST['texto']);
+}elseif($_SESSION['nick'] && $_POST['texto']){
+    /**
+     * Criar mensagem
+     */
+    $_POST['texto'] = $bw->goChanges($_POST['texto']);
+    $ec->msg($_SESSION['nick'], $_POST['texto']);
 }
 
 /**
  * Se for solicitado, o logoff é efetuado e o usuário é redirecionado
  */
-if ($HTTP_GET_VARS['logout'] == 'y') {
-    $ec->ec_unreg_nick();
-    echo "<SCRIPT>location.href = '" . $HTTP_SERVER_VARS['PHP_SELF'] . "?sala=" . $HTTP_GET_VARS['sala'] . "';</SCRIPT>";
+if ($_GET['logout'] == 'y') {
+    $ec->unregNick();
+    echo "<SCRIPT>location.href = '" . $_SERVER['PHP_SELF'] . "?sala=" . $_GET['sala'] . "';</SCRIPT>";
 }
 
 /**
- * Salva o nick do usuário em $_SESSION['nick']/$HTTP_COOKIE_VARS['nick'], salva o ip do usuário em
- * $_SESSION['ip']/$HTTP_COOKIE_VARS['ip'] e define suas constantes.
+ * Define o ip do usuário
+ * Cria as costantes EC_CUR_IP e EC_CUR_NICK
  */
-$ec->ec_reg_nick(stripslashes($HTTP_POST_VARS['nick']));
-if(EC_AUTH != 2) {
-    $_SESSION['ip'] = $HTTP_SERVER_VARS['REMOTE_ADDR'];
-    define('EC_CUR_IP',$_SESSION['ip']);
-    $eb = 'ec_bbcode';
-    $hsc = 'htmlspecialchars';
-    define('EC_CUR_NICK',$ec->$eb($hsc($_SESSION['nick'])));
-    unset($eb);
-    unset($hsc);
-}else{
-    $HTTP_COOKIE_VARS['ip'] = $HTTP_COOKIE_VARS['REMOTE_ADDR'];
-    define('EC_CUR_IP',$HTTP_COOKIE_VARS['ip']);
-    $eb = 'ec_bbcode';
-    $hsc = 'htmlspecialchars';
-    define('EC_CUR_NICK',$ec->$eb($hsc($HTTP_COOKIE_VARS['nick'])));
-    unset($eb);
-    unset($hsc);
-}
+$_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
+define('EC_CUR_IP',$_SESSION['ip']);
+$eb  = 'bbCode';
+$hsc = 'htmlspecialchars';
+define('EC_CUR_NICK',stripslashes($ec->$eb($hsc($_SESSION['nick']))));
+unset($eb);
+unset($hsc);
 
 /**
  * Se o arquivo da sala atual não existe é criaado
@@ -141,32 +184,26 @@ if (!file_exists(EC_ATUAL_ARQ)) {
 	@fclose($fp);
 }
 
-/**
- * Gera as mensagens enviadas
- */
- if(EC_AUTH != 2) {
-     $ec->ec_msg($_SESSION['nick'], $HTTP_POST_VARS['texto'],0);
- }else{
-     $ec->ec_msg($HTTP_COOKIE_VARS['nick'], $HTTP_POST_VARS['texto'],0);
- }
 
 /**
  * Calcula o número de mensagens enviadas
  */
-$n_mensagens = $ec->ec_get_num_msgs();
+$n_mensagens = $ec->getNumMsgs();
 
 /**
  * Limpa as mensagens se o número delas for igual ou maior que o número máximo de 
  * mensagens. Define a variável
  */
 if ($n_mensagens >= EC_MAX_MSG) {	
-	$ec->ec_limpa(EC_ATUAL_ARQ);
+	$ec->limpa(EC_ATUAL_ARQ);
 }
 if ($n_mensagens < 0 || $n_mensagens > EC_MAX_MSG) {
     unset($n_mensagens);
     $n_mensagens = 0;	
+    define('EC_N_MSG',0,TRUE);
+}else{
+    define('EC_N_MSG',$n_mensagens,TRUE);
 }
-define('EC_N_MSG',$n_mensagens);
 
 /**
  * Define os estilos de texto
@@ -221,18 +258,18 @@ $cores = array(
 /**
  * Definições de layout: Lista de salas
  */
-for ($i = 1; $i < EC_SALAS + 1; $i++) {
-    if ($i == $HTTP_GET_VARS['sala']) {
+for ($i = 1; $i < EC_NUM_SALAS + 1; $i++) {
+    if ($i == $_GET['sala']) {
         $tpl['S_N_SALA'] .= "&nbsp;[$i]";
     }else {
-        $tpl['S_N_SALA'] .= '&nbsp;<A HREF="' . $HTTP_SERVER_VARS['PHP_SELF'] . '?sala=' . $i . '" >' . $i .'</A>';
+        $tpl['S_N_SALA'] .= '&nbsp;<A HREF="' . $_SERVER['PHP_SELF'] . '?sala=' . $i . '" >' . $i .'</A>';
     }
 }
 
 /**
  * Definições de layout: Nick box
  */
-$nick_box1     = '<INPUT TYPE="text" size="40" maxlength="' . EC_NICK . '" NAME="nick"  value="' . EC_CUR_NICK . '">';
+$nick_box1     = '<INPUT TYPE="text" size="40" maxlength="' . EC_TAM_NICK . '" NAME="nick"  value="Usr_' .mt_rand(11111,99999) . '">';
 $nick_box2     = '';
 if (EC_CUR_NICK)
 {
@@ -261,7 +298,7 @@ while(list($name,$key) = each( $smilies))
 }
 
 if ($_SESSION['nick']) {
-    $s_logout = '[<A HREF="' . $HTTP_SERVER_VARS['PHP_SELF'] . '?logout=y">' . $lng['logout'] . '</A>]';
+    $s_logout = '[<A HREF="' . $_SERVER['PHP_SELF'] . '?logout=y">' . $lng['logout'] . '</A>]';
 }else{
     $s_logout = '';
 }
@@ -274,6 +311,22 @@ while(list($k,$v) = each($cores)) {
     $tpl['OPT_COLORS'] .= '<OPTION value="'.$v.'">'.$k.'</OPTION>';
 }
 
+/**
+ * Definições de temas
+ */
+$d = dir("templates/");
+while (false !== ($y = $d->read())) {
+    if($y != '.' && $y != '..' && @is_dir('templates/'.$y)) {
+        if($_SESSION['style'] == $y) {
+            $oth = ' selected ';
+        }else{
+            $oth = '';
+        }
+        $tpl['OPT_THEMES'] .= '<OPTION value="'.$y.'"' . $oth .'>'.$y.'</OPTION>';
+    }
+}
+$d->close();
+
 $cteT = $_EC['EC_TEXT0'];
 /**
  * Definições de layout: Definições
@@ -285,26 +338,35 @@ $tpl['S_ENVIAR']        = $lng['enviar'];
 $tpl['S_LIMPAR']        = $lng['limpar'];
 $tpl['S_ADMINISTRACAO'] = $lng['administracao'];
 $tpl['S_SMILIES']       = $lng['smilies'];
-$tpl['EC_CHAT']         = EC_CHAT;
-$tpl['EC_JSCRIPT']      = '';
-$tpl['SELF']            = $HTTP_SERVER_VARS['PHP_SELF'];
-$tpl['ATUAL_SALA']      = $HTTP_GET_VARS['sala'];
+$tpl['EC_CHAT']         = EC_NOME_CHAT;
+$tpl['EC_JSCRIPT']      = "window.name='chat';";
+$tpl['SELF']            = $_SERVER['PHP_SELF'];
+$tpl['ATUAL_SALA']      = $_GET['sala'];
 $tpl['S_SALA']          = $lng['sala'];
 $tpl['S_TEXTO']         = $lng['texto'];
 $tpl['S_ESTILO']        = $lng['estilo'];
+$tpl['S_THEME']         = $lng['tema'];
 $tpl['S_COLORS']        = $lng['cor'];
 $tpl['OPT_SMILIES']     = '<OPTION ></OPTION>' . $tpl['OPT_SMILIES'];
-$tpl['OPT_STYLE']       = "<OPTION ></OPTION>\n" . $tpl['OPT_STYLE'];
+$tpl['OPT_STYLE']       = "<OPTION ></OPTION>" . $tpl['OPT_STYLE'];
 $tpl['OPT_COLORS']      = '<OPTION ></OPTION>' . $tpl['OPT_COLORS'];
+$tpl['OPT_THEMES']      = '<OPTION ></OPTION>' . $tpl['OPT_THEMES'];
 $tpl['T_SIZE']          = ($cteT)?$cteT:52;
 $tpl['S_LOGOUT']        = $s_logout;
 
-$h = fopen(EC_TPL1,'rb');
-$r = fread($h, filesize(EC_TPL1) + 1 );
+//$_SESSION['style'] = 'default';
+$tfile = $_SESSION['style'] ? $_SESSION['style']: EC_TEMPLATE;
+$template = strtolower('templates/' . $tfile . '/template1.html');
+$h = fopen($template,'rb');
+$r = fread($h, filesize($template) + 1 );
 
 
 while(list($k,$v) = each($tpl)) {
-    $r = str_replace('{'.$k.'}',$v,$r);
+    $r = @str_replace('{'.$k.'}',$v,$r);
 }
 echo $r;
 ?>
+<PRE>
+
+<A HREF="docs/help.html">Ajuda/Help</A>
+</PRE>

@@ -49,67 +49,57 @@ $ec = ec('',$lng['anonimo'],$lng['admin'],$lng['entrou'],$lng['saiu']);
 /**
  * Verifica se o chat está bloqueado
  */
-if (EC_BLOQ != 0 || $cfg['EC_BLOQ'] != 0) {
+if (EC_BLOQUEAR != 0 || $cfg['EC_BLOQUEAR'] != 0) {
     exit;    
 }
 
 /**
- * Define a variável $abre com o valorde $HTTP_GET_VARS['abre']
+ * Define a variável $abre com o valorde $_GET['abre']
  */
-$abre = $HTTP_GET_VARS['abre'];
+$abre = $_GET['abre'];
+
+/**
+ * Salva o tema do usuário
+ */
+if($_POST['thema']) {
+    $_SESSION['style'] = $_POST['thema'];
+}
 
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<TITLE><?php echo EC_CHAT; ?></TITLE>
+<TITLE><?php echo EC_NOME_CHAT; ?></TITLE>
 <META NAME="Generator" CONTENT="EditPlus">
-<!-- <meta http-equiv="refresh" content="3; url=<?php echo $HTTP_SERVER_VARS['PHP_SELF'] . '?abre=' . $HTTP_GET_VARS['abre']?>"> -->
 <SCRIPT LANGUAGE="JavaScript" src="script.js"></script>
+<SCRIPT LANGUAGE="JavaScript" src="finddom.js"></script>
 <SCRIPT>
-var el = 'body';
-function processGetPost(){
+var IdToWrite = 'body';
+
+function GetPost(){
     var myajax=ajaxpack.ajaxobj
     var myfiletype=ajaxpack.filetype
+    var ob = findDOM(IdToWrite,0);
     if (myajax.readyState == 4){ //if request of file completed
         if (myajax.status==200 || window.location.href.indexOf("http")==-1){
-            if (myfiletype=="txt")
-            document.getElementById(el).innerHTML=myajax.responseText
-            else
-            document.getElementById(el).innerHTML=myajax.responseText
+            if (myfiletype=="txt"){
+                ob.innerHTML=myajax.responseText;
+            }
+            else{
+                ob.innerHTML=myajax.responseText;
+
+            }
         }
     }
 }
 
-function r() {
-	
-ajaxpack.getAjaxRequest('gerasala.php',"abre=<?php echo $abre;?>",processGetPost,'txt');
-setTimeout('r()',<?php echo EC_REFRESH;?>000);
+function LoadMsgs() {
+    ajaxpack.getAjaxRequest('gerasala.php',"abre=<?php echo $abre;?>",GetPost,'txt');
+    setTimeout('LoadMsgs()',<?php echo EC_REFRESH;?>000);
 }
 </SCRIPT>
-<style>
-body {font-family:Verdana, Tahoma; font-size:8pt;margin:2px;
-     border: 0px solid;border-right-width:1px;border-color:#000000;
-	SCROLLBAR-FACE-COLOR:#EEEEEE;SCROLLBAR-ARROW-COLOR:#808080;
-	SCROLLBAR-3DLIGHT-COLOR:#F0F0F0;SCROLLBAR-DARKSHADOW-COLOR:#808080;
-	SCROLLBAR-HIGHLIGHT-COLOR:#FFFFFF;SCROLLBAR-SHADOW-COLOR:#C0C0C0;
-	SCROLLBAR-TRACK-COLOR:#FFFFFF;}
-
-a:link{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
-a:visited{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
-a:hover{font-family:Verdana, Tahoma; font-size:8pt;color:#F00000;}
-
-.msg1 {border-style:solid; border-width:1px;border-color:#B0B0B0;
-       background-color:#FDFDFD;font-family:Verdana, Tahoma;
-       font-size:8pt;margin:0px;height:20px;}
-
-.msg2 {border-style:solid; border-width:1px;border-color:#B0B0B0;
-       background-color:#FFFFDD;font-family:Verdana, Tahoma;
-       font-size:8pt;margin:0px;height:20px;}
-
-</style>
-
+<link rel="stylesheet" type="text/css" href="templates/<?php echo $_SESSION['style'] ; ?>/style.css">
 </HEAD>
-<BODY bgcolor="#FFFFFF" onload="r()" scroll="auto" >
+<BODY bgcolor="#FFFFFF" onload="LoadMsgs()" scroll="auto" >
 <DIV ALIGN="" id="body" style="width:100%;height:100%;"></DIV>
 </body></html>

@@ -44,7 +44,7 @@ require_once ('classes/ec.class.php');
 /**
  * Verifica se o chat está bloqueado
  */
-if (EC_BLOQ != 0 || $cfg['EC_BLOQ'] != 0) {
+if (EC_BLOQUEAR != 0 || $cfg['EC_BLOQUEAR'] != 0) {
     exit;    
 }
 
@@ -54,9 +54,9 @@ if (EC_BLOQ != 0 || $cfg['EC_BLOQ'] != 0) {
 session_start();
 
 /**
- * Define a variável $abre com o valorde $HTTP_GET_VARS['abre']
+ * Define a variável $abre com o valorde $_GET['abre']
  */
-$abre = $HTTP_GET_VARS['abre'];
+$abre = $_GET['abre'];
 
 /**
  * Corrige erros com o nome da sala
@@ -85,19 +85,19 @@ if (!file_exists($arq)) {
 /**
  * Verifica se o usuário está banido
  */
- if($ec->ec_is_ban($HTTP_SERVER_VARS['REMOTE_ADDR'])) {
+ if($ec->isBan($_SERVER['REMOTE_ADDR'])) {
      die($lng['vc_banido']);
  }
 
 /**
  * Abre e lê o arquivo da sala
  */
-$fr = $ec->ec_ler($arq);
+$fr = $ec->ler($arq);
 
 /**
  * Interpreta as mensagens
  */
-$m = $ec->ec_get_msg($fr);
+$m = $ec->getMsg($fr);
 
 for ($i=0; $i<count($m); $i++) {
 
@@ -111,18 +111,20 @@ for ($i=0; $i<count($m); $i++) {
     /**
      * Correção do erro que fazia aparecer um "A" antes do nick
      */
-    if($_SESSION['nick'] || $HTTP_COOKIE_VARS['nick']) {
-        if($muser == 'A' . $_SESSION['nick'] || $muser == 'A' . $_SESSION['nick']) {
-            $muser = substr($muser,1,strlen($muser));
-        }
+    if($muser == 'A' . $_SESSION['nick'] || $muser == 'A' . $_COOKIE['nick']) {
+        $muser = substr($muser,1);
     }
     
     if($muser && $mtext) {
-        if(strstr($mtext,'[m]')) {
-            $mtext = explode('[m]',$mtext);
-            if($mtext[0] == $_SESSION['nick'] || $mtext[0] == $HTTP_COOKIE_VARS['nick']) {
+        if(strstr($mtext,'[mp]')) {
+            $mtext = explode('[mp]',$mtext);
+            if($mtext[0] == $_SESSION['nick'] || $mtext[0] == $_COOKIE['nick']) {
                 $MSG[0] = $muser;
                 $MSG[1] = $mtext[1];
+                $TAG = 2;
+            }else{
+                $MSG[0] = NULL;
+                $MSG[1] = NULL;
                 $TAG = 2;
             }
         }elseif($mtext && $muser)
@@ -131,11 +133,12 @@ for ($i=0; $i<count($m); $i++) {
             $MSG[1] = $mtext;
             $TAG = 1;
         }
-        $mensagens .= 
-            "<TR><TD class=\"msg{$TAG}\"><B>[{$MSG[0]}</b> {$lng['diz']}<B>]&nbsp;</B>{$MSG[1]}</TD></TR>\n";
+        if($MSG[0] != NULL ) {
+            $mensagens .= sprintf(EC_MSG_FORMAT,$TAG,$MSG[0],$lng['diz'],$MSG[1]);
+            //"<TR><TD class=\"msg{$TAG}\"><B>[{$MSG[0]}</b>&nbsp;{$lng['diz']}<B>] </B>{$MSG[1]}</TD></TR>\n";
+        }        
     }
-
 }
 
-echo "<TABLE WIDTH=\"100%\">$mensagens</TABLE>" ;
+echo "<table width=\"100%\">\n$mensagens\n</table>" ;
 ?>

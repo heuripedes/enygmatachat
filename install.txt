@@ -19,55 +19,68 @@ REQUISITOS:
  * Arquivos:
  /-enygmatachat/
        |
-	   |-classes/
-	   | |-ec.class.php
-	   |
+       |-classes/
+       | |-ec.class.php
+       |
        |-images/
-       | |-tabela.gif
-       | |-tabela2.gif
-	   | |-1.gif
-	   | |-2.gif
-  	   | |-3.gif
-	   | |-4.gif
-	   | |-5.gif
-  	   | |-6.gif
-	   | |-7.gif
-	   | |-8.gif
-  	   | |-9.gif
-	   | |-10.gif
-	   |
-	   |-lang/
-	   | |-ptbr.php
-	   | |-enus.php
-	   |
+       | |-1.gif
+       | |-2.gif
+       | |-3.gif
+       | |-4.gif
+       | |-5.gif
+       | |-6.gif
+       | |-7.gif
+       | |-8.gif
+       | |-9.gif
+       | |-10.gif
+       |
+       |-lang/
+       | |-ptbr.php
+       | |-enus.php
+       |
        |-texto/
        |  
        |-index.php
        |-config.php
        |-functions.inc.php
+       |-gerasala.php
        |-salas.php
        |-script.js
-	   |-copyng.txt
-	   |-colaboradores.txt
+       |-copyng.txt
+       |-colaboradores.txt
        |-info.txt
-       |-leia.txt
 
 3 - Permissões
-    *No Windows:
-		Você precisa dar todas as permissões à pasta texto (leitura,escrita, execução)e para o arquivo tpl1.html;
+	*No Windows:
+		Você precisa dar todas as permissões à pasta texto e seus arquivos (leitura,escrita, execução);
+		Você precisa dar todas as permissões ao arquivo ec_config.ini;
+		Você precisa dar todas as permissões ao diretório templates;
+
 	*No Unix:
-		Dê chmod 777 no diretório texto e para o arquivo tpl1.html;
-	
+		Dê chmod 777 no diretório texto e para seus arquivos;
+		Dê chmod 777 no arquivo ec_config.ini;
+		Dê chmod 777 no diretório templates;
+
 4 - Configure o chat:
-		abra o arquivo config.php num editor
+		abra o arquivo ec_config.ini num editor
 
 		*Mudando o nome do chat =
 			 procure a seguinte linha
-				$cfg['EC_CHAT'] = 'Enygmata Chat';
+				EC_CHAT="Enygmata Chat 3.3"';
 			substitua Enygmata Chat pelo nome desejado
 		*Mudando a senha do chat = 
 			procure a seguinte linha
-				$cfg['EC_SENHA'] = '1234';
+				EC_SENHA="1234";
 			substitua 1234 pela senha desejada.
+		*Mudando o nome do administrador
+			procure a seguinte linha
+				EC_NOME="Enygmata";
+			substitua Enygmata por um nome qualquer
+		*Mudando o Template do chat
+			procure a seguinte linha
+				EC_TPL="Default";
+			substitua Default para o template que vc tem no 
+			diretório template
+
 
 5 - Pronto você já pode utilizar o chat

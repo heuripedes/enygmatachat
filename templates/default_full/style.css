@@ -1,0 +1,33 @@
+body {font-family:Verdana, Tahoma; font-size:8pt;margin:2px;
+     border: 0px solid;border-right-width:1px;border-color:#000000;
+	SCROLLBAR-FACE-COLOR:#EEEEEE;SCROLLBAR-ARROW-COLOR:#808080;
+	SCROLLBAR-3DLIGHT-COLOR:#F0F0F0;SCROLLBAR-DARKSHADOW-COLOR:#808080;
+	SCROLLBAR-HIGHLIGHT-COLOR:#FFFFFF;SCROLLBAR-SHADOW-COLOR:#C0C0C0;
+	SCROLLBAR-TRACK-COLOR:#FFFFFF;}
+
+a:link{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
+a:visited{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
+a:hover{font-family:Verdana, Tahoma; font-size:8pt;color:#F00000;}
+
+.msg1 {border-style:solid; border-width:1px;border-color:#B0B0B0;
+       background-color:#FDFDFD;font-family:Verdana, Tahoma;
+       font-size:8pt;margin:0px;height:20px;}
+
+.msg2 {border-style:solid; border-width:1px;border-color:#000000;
+       background-color:#F0F0F0;font-family:Verdana, Tahoma;
+       font-size:8pt;margin:0px;height:20px;}
+.tab_top { background-color:#F1F1F1;background-image:url('images/tabela.gif');
+        border:0px solid ;border-color:#808080;
+        border-bottom-width:1px;border-right-width:1px;}
+.tab_down {background-color:#F1F1F1;background-image:url('images/tabela2.gif');
+        border:0px solid ;border-color:#808080;
+        border-bottom-width:1px;border-right-width:1px;}
+.tab1 { text-indent: 3pt;}
+.tab1_ { text-indent: 3pt;border:0px solid ;border-color:#C0C0C0;
+    border-bottom-width:1px;}
+.titulo { font-family:Trebuchet Ms,Verdana,Helvetica,Tahoma,Arial,Serif;
+        font-size: 16pt; font-weight:bold;}
+.texto{font-family:Verdana, Tahoma; font-size:8pt;background-color:#F1F1F1;}
+hr {color:#C0C0C0;height:1px;}
+input,select {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+.td {font-family:Verdana, Tahoma; font-size:8pt;}

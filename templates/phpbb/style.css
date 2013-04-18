@@ -1,0 +1,73 @@
+.tab_top {
+	background-image:url('images/tabela.gif');
+    width:598px;padding-left:5px;
+}
+
+.tab_down {
+	background-image:url('images/tabela2.gif');
+    height:98px;padding-left:5px;
+}
+
+.tab1 {
+	text-indent: 3pt;
+}
+
+.tab1_{
+	text-indent: 3pt;border:0px solid ;border-color:#C0C0C0;
+    border-bottom-width:1px;
+}
+
+.titulo{
+	font-family:Trebuchet Ms,Verdana,Helvetica,Tahoma,Arial,Serif;
+    font-size: 16pt; font-weight:bold;
+}
+
+.texto{
+	font-family:Verdana, Tahoma; font-size:8pt;background-color:#F1F1F1;
+}
+
+body {
+	font-family:Verdana, Tahoma; font-size:8pt;margin:0px;
+	background-color: #E5E5E5;
+	scrollbar-face-color: #DEE3E7;
+	scrollbar-highlight-color: #FFFFFF;
+	scrollbar-shadow-color: #DEE3E7;
+	scrollbar-3dlight-color: #D1D7DC;
+	scrollbar-arrow-color:  #006699;
+	scrollbar-track-color: #EFEFEF;
+	scrollbar-darkshadow-color: #98AAB1;
+	text-align:center;color:#0000A0;
+	border-width:0px;
+	}
+
+a:link,a:active,a:visited {
+	color : #006699;
+}
+a:hover	{
+	text-decoration: underline; color : #DD6900;
+}
+
+hr {
+	color:#C0C0C0;height:1px;
+}
+input,textarea, select {
+	color : #000000;
+	font: normal 11px Verdana, Arial, Helvetica, sans-serif;
+	border-color : #000000;
+	border-width:1px;
+	background-color : #EFEFEF;
+}
+.td {
+	font-family:Verdana, Tahoma; font-size:8pt;
+}
+.msg1{
+	border-style:dashed; border-width:1px;border-color:#663399;
+    background-color:#FDFDFD;font-family:Verdana, Tahoma;
+    font-size:8pt;margin:0px;height:20px;color:#000000;
+}
+
+.msg2 {
+	border-style:dashed; border-width:1px;border-color:#663399;
+    background-color:#D7EBFF;font-family:Verdana, Tahoma;
+    font-size:8pt;margin:0px;height:20px;color:#000000;
+}

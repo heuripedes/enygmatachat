@@ -1,3 +1,4 @@
+
 ///Variáveis
 var imageTag = false;
 var theSelection = false;

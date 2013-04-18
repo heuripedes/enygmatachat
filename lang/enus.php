@@ -51,6 +51,7 @@ $lng['travado']       = 'Sorry this chat is blocked.';
 $lng['u_online']      = 'Users online';
 $lng['vc_banido']     = 'You are banished';
 $lng['volta_chat']    = 'Back to chat';
+$lng['tema']          = 'Theme';
 
 $clng['azul1']        = 'Blue1';
 $clng['azul2']        = 'Blue2';

@@ -47,10 +47,10 @@
  *
  * @access public
  * @static
- * @see ec(),Enygmata_chat::start()
+ * 
  */
-function ec($arq = '',$anonimo = '',$admin = '',$entra = '',$sai = ''){
-    $ob = new Enygmata_chat($arq,$anonimo,$admin,$entra,$sai);
+function ec($arq = '',$anonimo = '',$admin = '',$entra = '',$sai = '',$tpl = ''){
+    $ob = new Enygmata_chat($arq,$anonimo,$admin,$entra,$sai,$tpl);
     return $ob;
 }
 
@@ -108,6 +108,26 @@ class Enygmata_chat
      * @var string
      */
 	var $entra = NULL;
+    /**
+     * Nome do template
+     *
+     * @var string
+     */
+    var $tpl = NULL;
+
+    /**
+     * Indica se a classe está ocupada
+     *
+     * @var int
+     */ 
+    var $busy = 0;
+
+    /**
+     * Cache de informações
+     *
+     * @var array
+     */
+    var $infCache = array('msg'=>NULL);
 
     // }}}
     // {{{ Construtor
@@ -127,6 +147,7 @@ class Enygmata_chat
      * @param string $admin    a string do admnistrador
      * @param string $entra    a string de entrada na sala
      * @param string $sai      a string de saida da sala
+     * @param string $
      * 
      * @return bool  Retorna TRUE em caso de sucesso e FALSE em caso de falha
      * @throws exceptionclass  [description]
@@ -186,7 +207,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_get_num_msgs();
+     * $ec->getNumMsgs();
      *
      * </code>
      *
@@ -199,9 +220,9 @@ class Enygmata_chat
      * @static
      * @see 
      */
-    function ec_get_num_msgs ()
+    function getNumMsgs ()
 	{
-        $fr  = $this->ec_ler($this->arq);
+        $fr  = $this->ler($this->arq);
         if (!$fr) {
             return false;
         }
@@ -218,7 +239,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_get_files_sizes($num, $pre);
+     * $ec->getFilesSizes($num, $pre);
      *
      * </code>
      * @param int $num     numero de arquivos de sala existentes
@@ -229,9 +250,9 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_get_num_msgs()
+     * @see Enygmata_chat::getNumMsgs()
      */
-    function ec_get_files_sizes ($num,$pre)
+    function getFilesSizes ($num,$pre)
 	{
         settype($num,'integer');
         for ($i=1; $i<$num; $i++) {
@@ -248,7 +269,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_bbcode($bbcode);
+     * $ec->bbCode($bbcode);
      *
      * </code>
      * @param string $pre  texto com bbcode
@@ -258,9 +279,9 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_smilies()
+     * @see Enygmata_chat::smilies()
      */
-    function ec_bbcode ( $bbcode)
+    function bbCode ( $bbcode)
 	{ 
         if (!trim($bbcode)) {
             Return false;
@@ -294,7 +315,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_smilies($txt);
+     * $ec->smilies($txt);
      *
      * </code>
      * @param string $txt  texto com cdigos ´de smilies
@@ -304,9 +325,9 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_bbcode()
+     * @see Enygmata_chat::bbCode()
      */
-    function ec_smilies ($txt)
+    function smilies ($txt)
 	{
         if (!trim($txt)) {
             Return false;
@@ -325,7 +346,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_msg($Nick,$Texto);
+     * $ec->msg($Nick,$Texto);
      *
      * </code>
      * @param string $Nick  texto com nick do usuário
@@ -336,34 +357,44 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_get_msg(),Enymata_chat::ec_msg2();
+     * @see Enygmata_chat::getMsg(),Enymata_chat::msg2();
      */
-    function ec_msg ($Nick,$Texto)
+    function msg ($Nick =NULL,$Texto=NULL)
 	{
+        clearstatcache();
+        $temp = tmpfile();
+        @fflush ( $temp );
+        fclose($temp);
         if ($Texto) {
-            if($this->ec_is_ban($HTTP_SERVER_VARS['REMOTE_ADDR'])) {
+            if($this->isBan($_SERVER['REMOTE_ADDR'])) {
                 return;
             }
-            if($Nick == $this->admin && $HTTP_SERVER_VARS['REMOTE_ADDR'] != $HTTP_SERVER_VARS['SERVER_ADDR']) {
+            if($Nick == $this->admin && $_SERVER['REMOTE_ADDR'] != $_SERVER['SERVER_ADDR']) {
                 return;
             }
-            $Nick  = $Nick ? $Nick : $this->anonimo;
-            $Nick = $this->ec_bbcode(htmlentities($Nick));
-            $Nick = $this->ec_smilies($Nick);
-            $Texto = $this->ec_bbcode(htmlentities($Texto));
-            $Texto = $this->ec_smilies($Texto);
+                  
+            $Nick  = htmlspecialchars($Nick);
+            $Texto = htmlspecialchars($Texto);
+            $Nick  = $this->bbCode($Nick);
+            $Nick  = $this->smilies($Nick);
+            $Texto = $this->bbCode($Texto);
+            $Texto = $this->smilies($Texto);
             $Nick  = stripslashes($Nick);
             $Texto = stripslashes($Texto);
-
-           $fr = $this->ec_ler($this->arq);
             
-            $ip  = $HTTP_SERVER_VARS['REMOTE_ADDR'];	
-            $tpl = $Nick . '<+>' . $ip .'<+>' . $Texto ."\n";
+            unset($fr);
+            $fr = $this->ler($this->arq);
+            
+            $ip  = $_SERVER['REMOTE_ADDR'];	
+            $tpl = "$Nick<+>$ip<+>$Texto\n";
 
-            $fr .= $tpl ;
+            $fr .= $tpl;
            
-            $this->ec_escreve($this->arq,$fr);
-             Return true;
+            $this->escreve($this->arq,$fr);
+            unset($fr);
+            unset($Nick);
+            unset($Texto);
+            Return true;
         }else{
             return false;
         }
@@ -378,7 +409,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_msg2($texto,$notice);
+     * $ec->msg2($texto,$notice);
      *
      * </code>
      * @param string $texto texto da mensagem
@@ -389,9 +420,9 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_get_msg(),Enymata_chat::ec_msg();
+     * @see Enygmata_chat::getMsg(),Enymata_chat::msg();
      */
-    function ec_msg2 ($texto,$notice)
+    function msg2 ($texto,$notice)
     {
         echo '<B>' . $notice . ': </B>' . $texto .'<br>';
     }
@@ -404,7 +435,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_get_msg($txt);
+     * $ec->getMsg($txt);
      *
      * </code>
      * @param string $txt texto não interpretado
@@ -414,19 +445,21 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_msg(),Enymata_chat::ec_msg2();
+     * @see Enygmata_chat::msg(),Enymata_chat::msg2();
      */
-    function ec_get_msg ($txt = ''){
+    function getMsg ($txt = ''){
         if(!$txt) {
-            $txt = $this->ec_ler($this->arq);
+            $txt = $this->ler($this->arq);
         }
         $msg = explode("\n" , $txt);
         $msg = array_reverse($msg);
 
         for ($i=0; $i<count($msg); $i++) {
             $msg[$i] = explode('<+>', $msg[$i]);
+            if($msg[$i][0] == 'A'.$_SESSION['nick']) {
+                $msg[$i][0] = substr($msg[$i][0],1);
+            }
         }
-
         return $msg;
     }
 
@@ -438,7 +471,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $fr = $ec->ec_ler($file);
+     * $fr = $ec->ler($file);
      * echo $fr;
      *
      * </code>
@@ -449,11 +482,11 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_escreve(),Enygmata_chat::ec_limpa(),
+     * @see Enygmata_chat::escreve(),Enygmata_chat::limpa(),
      */
-    function ec_ler ($file)
+    function ler ($file)
 	{
-        $fp = fopen($file, 'rb');
+        $fp = @fopen($file, 'r');
         if (!$fp) {
             Return false;
         }
@@ -471,7 +504,7 @@ class Enygmata_chat
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
      * $str = 'oi mamae';
-     * $ec->ec_escreve($file, $oq);
+     * $ec->escreve($file, $oq);
      *
      * </code>
      * @param string $file nome do arquivo à ser gravado
@@ -482,11 +515,11 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_ler(),Enygmata_chat::ec_limpa()
+     * @see Enygmata_chat::ler(),Enygmata_chat::limpa()
      */
-    function ec_escreve ($file, $oq)
+    function escreve ($file, $oq)
 	{
-        $fp = fopen($file, 'wb');
+        $fp = fopen($file, 'w');
         if (!$fp) {
             Return false;
         }
@@ -503,7 +536,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_reg_nick($nick);
+     * $ec->regNick($nick);
      *
      * </code>
      * @param string $nick nome do usuário à ser registrado
@@ -513,28 +546,21 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_unreg_nick();
+     * @see Enygmata_chat::unregNick();
      */
-    function ec_reg_nick ($nick)
+    function regNick ($nick)
 	{
         if (trim($nick))
         {
-            if(EC_AUTH != 2) {
-                if (!$_SESSION['nick'] == $nick)
-                {
-                    $_SESSION['nick'] = $nick;
-                    $this->ec_msg ($this->admin,$nick . $this->entra);
-                    Return true;
-                }
-            }else{
-                if (!$HTTP_COOKIE_VARS['nick'] == $nick)
-                {
-                    $HTTP_COOKIE_VARS['nick'] = $nick;
-                    $this->ec_msg ($this->admin,$nick . $this->entra);
-                    Return true;
-                }
+            if (!$_SESSION['nick'] == $nick)
+            {
+                $_SESSION['nick'] = $nick;
+                $this->msg($this->admin,$_SESSION['nick'] . $this->entra);
             }
+        }else{
+            return false;
         }
+        
     }
 
     /**
@@ -546,7 +572,7 @@ class Enygmata_chat
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
      * $str = 'oi mamae';
-     * $ec->ec_unreg_nick();
+     * $ec->unregNick();
      *
      * </code>
      * @param void
@@ -558,18 +584,11 @@ class Enygmata_chat
      * @static
      * @see Enygmata_reg_nick()
      */
-    function ec_unreg_nick ()
+    function unregNick ()
     {
-        if(EC_AUTH != 2) {
-            if (isset($_SESSION['nick'])) {
-                $this->ec_msg($this->admin,$_SESSION['nick'] . $this->sai);
-                session_destroy();    
-            }
-        }else{
-            if (isset($HTTP_COOKIE_VARS['nick'])) {
-                $this->ec_msg($this->admin,$HTTP_COOKIE_VARS['nick'] . $this->sai);
-                unset($HTTP_COOKIE_VARS['nick']);
-            }
+        if (isset($_SESSION['nick'])) {
+            $this->msg($this->admin,$_SESSION['nick'] . $this->sai);
+            session_destroy();    
         }
     }
 
@@ -581,7 +600,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_limpa($arq);
+     * $ec->limpa($arq);
      *
      * </code>
      * @param string $arq nome do arquivo á ser limpo
@@ -591,9 +610,9 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_escreve(),ec_ler()
+     * @see Enygmata_chat::escreve(),ler()
      */
-    function ec_limpa ($arq)
+    function limpa ($arq)
 	{
         $fp = fopen($arq, 'wb');
         if (!$fp) {
@@ -612,7 +631,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_is_ban($ip);
+     * $ec->isBan($ip);
      *
      * </code>
      * @param string $ip ip do usuário
@@ -622,19 +641,19 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_ban(),Enygmata_chat::ec_un_ban()
+     * @see Enygmata_chat::ban(),Enygmata_chat::unBan()
      */
-     function ec_is_ban($ip) {
+     function isBan($ip) {
          $fnam = 'texto/banidos.txt';
          
          if(!@file_exists($fnam) ) {
              return;
          }
-         if($ip == $HTTP_SERVER_VARS['SERVER_ADDR']) {
+         if($ip == $_SERVER['SERVER_ADDR']) {
              return;
          }
 
-         $arq = $this->ec_ler($fnam);
+         $arq = $this->ler($fnam);
          if(stristr($arq,$ip)) {
              return true;
          }else{
@@ -649,7 +668,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_un_ban($ip);
+     * $ec->unBan($ip);
      *
      * </code>
      * @param void 
@@ -659,14 +678,14 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_is_ban(),Enygmata_chat::ec_ban()
+     * @see Enygmata_chat::isBan(),Enygmata_chat::ban()
      */
-     function ec_un_ban($ip) {
-         $sb = $this->ec_is_ban($ip);
+     function unBan($ip) {
+         $sb = $this->isBan($ip);
          if($sb) {
-             $l = $this->ec_ler('texto/banidos.txt');
+             $l = $this->ler('texto/banidos.txt');
              $l = str_replace($ip . "<ip>", '',$l);
-             $this->ec_escreve('texto/banidos.txt',$l);
+             $this->escreve('texto/banidos.txt',$l);
              return true;
          }else{
              return false;
@@ -680,7 +699,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_ban($ip);
+     * $ec->ban($ip);
      *
      * </code>
      * @param void 
@@ -690,14 +709,14 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_is_ban(),Enygmata_chat::ec_un_ban()
+     * @see Enygmata_chat::isBan(),Enygmata_chat::unBan()
      */
-     function ec_ban($ip) {
-         if($ip && md5($ip) != md5($HTTP_SERVER_VARS['SERVER_ADDR'])) {
-             $l = $this->ec_ler('texto/banidos.txt');
+     function ban($ip) {
+         if($ip && md5($ip) != md5($_SERVER['SERVER_ADDR'])) {
+             $l = $this->ler('texto/banidos.txt');
              if(!strstr($l,$ip)) {
                  $l .= $ip . "<ip>";
-                 $this->ec_escreve('texto/banidos.txt',$l);
+                 $this->escreve('texto/banidos.txt',$l);
                  return true;
              }else{
                  return false;
@@ -715,7 +734,7 @@ class Enygmata_chat
      * require_once('ec.class.php');
      * 
      * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
-     * $ec->ec_ls_online();
+     * $ec->lsOnline();
      *
      * </code>
      * @param void 
@@ -725,27 +744,22 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_unreg_nick(),Enygmata_chat::ec_reg_nick()
+     * @see Enygmata_chat::unregNick(),Enygmata_chat::regNick()
      */
-     function ec_ls_online() {
-         for($i=1;$i<EC_SALAS;$i++) {
-             $t .= $this->ec_ler('texto/' . EC_PREFIX . 'sala' . $i . '.txt');
+     function lsOnline() {
+         for($i=1;$i<EC_NUM_SALAS;$i++) {
+             $t .= $this->ler('texto/' . EC_PREFIX . 'sala' . $i . '.txt');
              
          }
             $msg = explode("\n" , $t);
             $msg = array_reverse($msg);
 
             for ($i=0; $i<count($msg); $i++) {
-                $msg[$i] = explode('<+>', $msg[$i]);
-                if($msg[$i][1] && $msg[$i][0]) {
-                    $u[0][$i] =  $msg[$i][0];
-                    $u[1][$i] =  $msg[$i][1];
-                }
+                $u[$i] = explode('<+>', $msg[$i]);
+                $u[$i]   = $u[$i][0] . '<>'.$u[$i][1];
             }
-
          return $u;
      }
-
 }
 
 
