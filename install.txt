@@ -16,29 +16,58 @@ REQUISITOS:
 
 1 - Copie o arquivo enygmatachat_*.*.rar ou enygmatachat_*.*.zip para um diretório qualquer
 2 - Descompacte-o no mesmo diretório
-* Arquivos:
+ * Arquivos:
  /-enygmatachat/
        |
+	   |-classes/
+	   | |-ec.class.php
+	   |
        |-images/
-       | |-tab.gif
-       |
+       | |-tabela.gif
+       | |-tabela2.gif
+	   | |-1.gif
+	   | |-2.gif
+  	   | |-3.gif
+	   | |-4.gif
+	   | |-5.gif
+  	   | |-6.gif
+	   | |-7.gif
+	   | |-8.gif
+  	   | |-9.gif
+	   | |-10.gif
+	   |
+	   |-lang/
+	   | |-ptbr.php
+	   | |-enus.php
+	   |
        |-texto/
        |  
        |-index.php
        |-config.php
-       |-func.php
+       |-functions.inc.php
        |-salas.php
        |-script.js
+	   |-copyng.txt
+	   |-colaboradores.txt
        |-info.txt
        |-leia.txt
 
-3 - Você precisa dar todas as permissões à pasta texto
+3 - Permissões
+    *No Windows:
+		Você precisa dar todas as permissões à pasta texto (leitura,escrita, execução)e para o arquivo tpl1.html;
+	*No Unix:
+		Dê chmod 777 no diretório texto e para o arquivo tpl1.html;
+	
 4 - Configure o chat:
-		
-		Mudando o nome do chat =
-		abra o arquivo config.php num editor e procure a seguinte linha
-			$NOME_CHAT = 'Enygmata Chat';
-		substitua 'Enygmata Chat' pelo nome do seu site exemplo:
-			$NOME_CHAT = 'Meu Chat';
+		abra o arquivo config.php num editor
+
+		*Mudando o nome do chat =
+			 procure a seguinte linha
+				$cfg['EC_CHAT'] = 'Enygmata Chat';
+			substitua Enygmata Chat pelo nome desejado
+		*Mudando a senha do chat = 
+			procure a seguinte linha
+				$cfg['EC_SENHA'] = '1234';
+			substitua 1234 pela senha desejada.
 
 5 - Pronto você já pode utilizar o chat

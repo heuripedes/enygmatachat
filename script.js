@@ -6,7 +6,7 @@ function sf(){
 }
 function foc()
 {
-	document.frm.user_txt.focus();
+	document.frm.texto.focus();
 }
 function sf2(){
 	cht.location.reload();
@@ -44,6 +44,23 @@ function smilies(){
 	fs = document.frm.smy;
 	document.frm.texto.value =  document.frm.texto.value + '[' + document.frm.smy.value + ']';
 }
+
+function MM_preloadImages() { //v3.0
+  var d=document;
+  if(d.images){ 
+	  if(!d.MM_p) {
+		  d.MM_p=new Array();
+	  }
+  }
+  var i,j=d.MM_p.length,a=MM_preloadImages.arguments;
+  for(i=0; i<a.length; i++){
+	  if (a[i].indexOf("#")!=0){ 
+		  d.MM_p[j]=new Image;
+		  d.MM_p[j++].src=a[i];
+	  }
+  }
+}
+
 
 
 

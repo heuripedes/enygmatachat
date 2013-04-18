@@ -1,0 +1,108 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+<title>{EC_CHAT}</title>
+<style type="text/css" title="">
+.tab_top { background-color:#F1F1F1;background-image:url('images/tabela.gif');
+		border:0px solid ;border-color:#808080;
+		border-bottom-width:1px;border-right-width:1px;}
+.tab_down {background-color:#F1F1F1;background-image:url('images/tabela2.gif');
+		border:0px solid ;border-color:#808080;
+		border-bottom-width:1px;border-right-width:1px;}
+.tab1 { text-indent: 3pt;}
+.tab1_ { text-indent: 3pt;border:0px solid ;border-color:#C0C0C0;
+	border-bottom-width:1px;}
+
+.titulo { font-family:Trebuchet Ms,Verdana,Helvetica,Tahoma,Arial,Serif;
+		font-size: 16pt; font-weight:bold;}
+.texto{font-family:Verdana, Tahoma; font-size:8pt;background-color:#F1F1F1;}
+
+body {font-family:Verdana, Tahoma; font-size:8pt;margin:0px;
+	SCROLLBAR-FACE-COLOR:#EEEEEE;SCROLLBAR-ARROW-COLOR:#808080;
+	SCROLLBAR-3DLIGHT-COLOR:#F0F0F0;SCROLLBAR-DARKSHADOW-COLOR:#808080;
+	SCROLLBAR-HIGHLIGHT-COLOR:#FFFFFF;SCROLLBAR-SHADOW-COLOR:#C0C0C0;
+	SCROLLBAR-TRACK-COLOR:#FFFFFF;}
+
+a:link{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
+a:visited{font-family:Verdana, Tahoma; font-size:8pt;color:#0000A0;}
+a:hover{font-family:Verdana, Tahoma; font-size:8pt;color:#F00000;}
+
+hr {color:#C0C0C0;height:1px;}
+input {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+select {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+.td {font-family:Verdana, Tahoma; font-size:8pt;}
+</style>
+<script language="javascript" type="text/javascript" src="script.js">
+</script>
+<script language="javascript">
+<!--
+{EC_JSCRIPT}
+//-->
+</SCRIPT>
+</HEAD>
+
+<body onload="foc();MM_preloadImages('images/tabela.gif','images/tabela2.gif');">
+<form name="frm" method=post action="{SELF}?sala={ATUAL_SALA}" >
+<table cellpadding="0" border=0 cellspacing="0"  width="600" height="85" class="tab_top" background="images/tabela.gif">
+    <tr>
+        <td class="tab1_" valign="middle" align="left" height="20">
+            <FONT class="titulo">{EC_CHAT}</FONT>
+        </td>
+    </tr>
+    <tr>
+        <td class="tab1" valign="middle" align="left" >
+            <FONT class="td">{S_SALA}:{S_N_SALA}</FONT>
+        </td>
+    </tr>
+    <tr>
+        <td class="tab1" valign="middle" align="left"  height="20">
+            <table width='100%'>
+                <tr>
+                    <TD width='34%'><FONT class="td">{S_MENSAGENS}:{S_N_MENSAGENS}</FONT></TD>
+                    <TD width='33%'>&nbsp;</TD>
+                    <td width='33%'><font class="td">&nbsp;</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<IFRAME NAME="cht" SRC="salas.php?abre={ATUAL_SALA}" WIDTH="600" height="200" style="bACKGROUND-color:#F1F1F1;">Seu navegador não suporta frames. <br>
+Para visualizar corretamente esta página atualize seu navegador ou instale um que suporte frames.</IFRAME>
+<table cellspacing="0" cellpadding="0"  class="tab_down" width="600" height="97" background="images/taela2.gif" >
+    <tr>
+        <td colspan=2>
+            <font class="td">&nbsp;{S_NICK}:&nbsp;</font>
+         {NICK_BOX}&nbsp;&nbsp;{S_LOGOUT}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <font class="td">&nbsp;{S_ESTILO}:</font>
+            <select name="bb" size="1" onchange="bbfontstyle('')">{OPT_STYLE}</select>
+        </td>
+        <td>
+            <font class="td">{S_SMILIES}:</font>
+            <select name="smy" onchange="smilies();">{OPT_SMILIES}</select>
+        </td>
+        <td>
+            <font class="td">{S_COLORS}:</font>
+            <select name="cor1" onchange="color2();">{OPT_COLORS}</select></td>
+     </tr>
+     <tr>
+        <td colspan=2>
+            <font class="td">&nbsp;{S_TEXTO}:</font>
+            <input type="text" size="40" maxlength="{T_SIZE}" class="" name="texto">
+        </td>
+        <td>&nbsp;</td>
+     </tr>
+    <tr>
+        <td colspan=3 align="center" valign="middle">
+            <input type="submit" value="{S_ENVIAR}">&nbsp;&nbsp;&nbsp;
+            <input type="reset"value="{S_LIMPAR}">
+        </td>
+    </tr>
+</table>
+</form>
+&nbsp;&nbsp;<A HREF="adm.php">{S_ADMINISTRACAO}</A>
+</body>
+</html>

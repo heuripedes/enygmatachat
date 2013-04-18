@@ -1,69 +1,157 @@
-<?
-session_start(  );
-include_once ( 'func.php' );
-include_once ( 'config.php' );
+<?php
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-//Configura o modo de manipulação de arquivos
-if ( $MODO_ARQUIVO == 1 )
-{
-	$MODO = 'b';
+/**
+ * Este é o arquivo de exibição principal
+ *
+ * 
+ *
+ * PHP versions 4.1.1 and 5
+ *
+ * LICENSE: This source file is subject to version 3.0 of the PHP license
+ * that is available through the world-wide-web at the following URI:
+ * http://www.php.net/license/3_0.txt.  If you did not receive a copy of
+ * the PHP License and are unable to obtain it through the web, please
+ * send a note to license@php.net so we can mail you a copy immediately.
+ *
+ * @category   Chat
+ * @package    Enygmata Chat
+ * @author     Higor Euripedes <heuripedes@hotmail.com>
+ * @copyright  2006 The EC Group
+ * @license    http://php.net/license/3_0.txt       PHP License 3.0
+ * @license    http://gnu.org/copyleft/lesser.html  LGPL License 2.1
+ * @version    CVS: $Id:$
+ * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
+ * @see        
+ * @since      File available since Release 3.2
+ * @deprecated File deprecated in Release 3.3
+ * @access     public
+ */
+ 
+/**
+ * Esta variável define que o EC pode funcionar comsegurança
+ */
+define('EC_OK',TRUE);
+
+/**
+ * Inclui o arquivo de configuração
+ */
+require_once ('config.php');
+
+/**
+ * Inclui o arquivo com a classe principal: Enygmata_Chat
+ */
+require_once ('classes/ec.class.php');
+
+/**
+ * Verifica se o chat está bloqueado
+ */
+if (EC_BLOC != 0 || $cfg['EC_BLOC'] != 0) {
+    exit;    
 }
 
-//Configura o número da sala até em caso de erro
-if ( $NUMERO_SALAS > 30 )
-{
-	$NUMERO_SALAS = 30;
-}
-unset( $sala );
-$sala = $_GET['sala'];
-if ( $sala == '' || $sala == 0 )
-{
-	$sala = 1;
-	$_GET['sala'] = 1;
-}
-if ( $sala >= $NUMERO_SALAS )
-{
-	$sala = $NUMERO_SALAS;
+/**
+ * Inicia a sessão atual
+ */
+session_start();
+
+/**
+ * Corige o número máximo de salas em caso de erro
+ */
+if (EC_SALAS > 30) {
+	define('EC_SALAS', 30);
 }
 
-//Configura o arquivo e a sala atual
-$atual =  $PREFIXO . 'sala' . $sala;
+/**
+ * Corrige o número da sala em caso de erro
+ */
+if ($_GET['sala'] >= EC_SALAS) {
+	$_GET['sala'] = EC_SALAS;
+}
+if ($_GET['sala'] < 1 ) {
+    $_GET['sala'] = 1;
+}
+if ($_GET['sala'] == '' ) {
+    $_GET['sala'] = 1;
+}
+
+/**
+ * Configura o arquivo da sala atual, define suaconstante e apaga a variável
+ */
+$atual =  EC_PREFIX . 'sala' . $_GET['sala'];
 $arq_atual = 'texto/' . $atual . '.txt';
+define('EC_ARQ',$atual);
+define('EC_ATUAL_ARQ', $arq_atual);
+unset($atual);
+unset($arq_atual);
 
+/**
+ * Inicia a classe Enygmata Chat
+ */
+$ec = ec(EC_ATUAL_ARQ,$lng['anonimo'],$lng['admin'],$lng['entrou'],$lng['saiu']);
 
-
-//Faz logout se for pedido
-if ( $_GET['logout'] == 'y' )
-{
-	echo  '<SCRIPT>location.href = \'' . $_SERVER['PHP_SELF'] . '?sala=' . $sala .'\';</SCRIPT>';
-	gera_msg2 ($_SESSION['nick'] , $SAI_SALA);
-	rem_nick( $_SESSION['nick']);
-	unset( $_SESSION['nick'] );
-	session_destroy(  );
+/**
+ * Bloqueia o chat se configurado para isso
+ */
+if(EC_BLOQ == 1) {
+    $ec->ec_msg2($lng['travado'],$lng['noticia']);
+	exit;
 }
 
-//Se o arquivo da sala não existe o cria
-if ( !file_exists( $arq_atual ) )
-{	
-	$fp = @fopen( $arq_atual, 'w' . $MODO );
-	@fclose( $fp );
+/**
+ * Se for solicitado, o logoff é efetuado e o usuário é redirecionado
+ */
+if ($_GET['logout'] == 'y') {
+    $ec->ec_unreg_nick();
+    echo "<SCRIPT>location.href = '" . $_SERVER['PHP_SELF'] . "?sala=" . $_GET['sala'] . "';</SCRIPT>";
 }
 
-//Salva o nick do usuário em $_SESSION['nick']
-salva_nick();
+/**
+ * Salva o nick do usuário em $_SESSION['nick'] e define sua constante
+ */
+$ec->ec_reg_nick($_POST['nick']);
+define('EC_CUR_NICK',$_SESSION['nick']);
 
-//Gera os posts
-gera_msg();
+/**
+ * Se o arquivo da sala atual não existe é criaado
+ */
+if (!file_exists(EC_ATUAL_ARQ)) {	
+	$fp = @fopen(EC_ATUAL_ARQ, 'wb');
+	@fclose($fp);
+}
 
-//Calcula o nº de posts
-$n_mensagens = n_mensagens();
+/**
+ * Gera as mensagens enviadas
+ */
+$ec->ec_msg($_POST['nick'], $_POST['texto']);
 
-//Estilos
-$styles = array( 'Negrito','Itálico','Sublinhado', 'Link' );
+/**
+ * Calcula o número de mensagens enviadas
+ */
+$n_mensagens = $ec->ec_get_num_msgs();
 
-//Smilies
+/**
+ * Limpa as mensagens se o número delas for igual ou maior que o número máximo de 
+ * mensagens. Define a variável
+ */
+if ($n_mensagens >= EC_MAX_MSG) {	
+	$ec->ec_limpa(EC_ATUAL_ARQ);
+}
+if ($n_mensagens < 0 || $n_mensagens > $MAX_MENSAGENS) {
+    unset($n_mensagens);
+    $n_mensagens = 0;	
+}
+define('EC_N_MSG',$n_mensagens);
+
+/**
+ * Define os estilos de texto
+ */
+$styles = array('Negrito','Itálico','Sublinhado', 'Link');
+
+/**
+ * Define os smilies
+ */
 $smilies = array(
-
 	'Risada' => '1',
 	'Choro' => '2',
 	'!' => '3',
@@ -76,159 +164,115 @@ $smilies = array(
 	'Legal' =>'10'
 );
 
-/*
-Limpa as mensagens se o número delas for igual ou maior que o número máximo de ->
- mensagens
+/**
+ * Define as cores
  */
-if ( $n_mensagens >= $MAX_MENSAGENS )
-{	
-	$n_messagens = 0;
-	limpa($arq_atual);
+$cores = array(
+    'Azul1' => '#0000FF',
+    'Azul2' => '#6600CC',
+    'Amarelo1' => '#FFFF00',
+    'Amarelo2' => '#FFCC00',
+    'Verde1' => '#00FF00',
+    'Verde2' => '#339966',
+    'Vermelho1' => '#FF0000',
+    'Vermelho2' => '#CC0000',
+    'Cinza1' => '#C0C0C0',
+    'Cinza2' => '#808080',
+    'Rosa' => '#FF80C0',
+    'Roxo' => '#FF00FF',
+    'Laranja' => '#FF8000',
+    'Marrom' => '#804000'
+    );
+
+/**
+ * Definições de layout
+ */
+
+/**
+ * Definições de layout: Lista de salas
+ */
+for ($i = 1; $i < EC_SALAS + 1; $i++) {
+    if ($i == $_GET['salas']) {
+        $tpl['S_N_SALA'] .= "&nbsp;[$i]";
+    }else {
+        $tpl['S_N_SALA'] .= '&nbsp;<A HREF="' . $_SERVER['PHP_SELF'] . '?sala=' . $i . '" >' . $i .'</A>';
+    }
 }
 
+/**
+ * Definições de layout: Nick box
+ */
+$nick_box1     = '<INPUT TYPE="text" size="40" maxlength="' . EC_NICK . '" NAME="nick"  value="' . EC_CUR_NICK . '">';
+$nick_box2     = '<INPUT TYPE="hidden" size="40" maxlength="'. EC_NICK . '" NAME="nick"" value="' . EC_CUR_NICK . '">';
+if (EC_CUR_NICK)
+{
+    $tpl['NICK_BOX'] = '<FONT class="td">' . EC_CUR_NICK . '</FONT>' . $nick_box2;
+}
+else
+{
+    $tpl['NICK_BOX'] = $nick_box1;
+}
+
+/**
+ * Definições de layout: Lista de estilos
+ */
+for ($i=0; $i<count($styles); $i++)
+{
+    $tpl['OPT_STYLE'] .= "<OPTION value=\"$i\">$styles[$i]</OPTION>\n";
+}
+
+/**
+ * Definições de layout: Lista de similies
+ */
+ksort($smilies);
+while(list($name,$key) = each( $smilies))
+{
+    $tpl['OPT_SMILIES'] .= '<OPTION value="' . $key . '">' . $name . '</OPTION>';
+}
+
+if ($_SESSION['nick']) {
+    $s_logout = '[<A HREF="' . $_SERVER['PHP_SELF'] . '?logout=y">' . $lng['logout'] . '</A>]';
+}
+
+/**
+ * Definições de cores
+ */
+ksort($cores);
+while(list($k,$v) = each($cores)) {
+    $tpl['OPT_COLORS'] .= '<OPTION value="'.$v.'">'.$k.'</OPTION>';
+}
+
+/**
+ * Definições de layout: Definições
+ */
+$tpl['S_MENSAGENS'] = $lng['mensagens'];
+$tpl['S_N_MENSAGENS']   = EC_N_MSG;
+$tpl['S_NICK']          = $lng['nick'];
+$tpl['S_ENVIAR']        = $lng['enviar'];
+$tpl['S_LIMPAR']        = $lng['limpar'];
+$tpl['S_ADMINISTRACAO'] = $lng['administracao'];
+$tpl['S_SMILIES']       = $lng['smilies'];
+$tpl['EC_CHAT']         = EC_CHAT;
+$tpl['EC_JSCRIPT']      = $pageScript;
+$tpl['SELF']            = $_SERVER['PHP_SELF'];
+$tpl['ATUAL_SALA']      = $atual;
+$tpl['S_SALA']          = $lng['sala'];
+$tpl['S_TEXTO']         = $lng['texto'];
+$tpl['S_ESTILO']        = $lng['estilo'];
+$tpl['S_COLORS']        = $lng['cor'];
+$tpl['OPT_SMILIES']     = '<OPTION ></OPTION>' . $tpl['OPT_SMILIES'];
+$tpl['OPT_STYLE']       = "<OPTION ></OPTION>\n" . $tpl['OPT_STYLE'];
+$tpl['OPT_COLORS']      = '<OPTION ></OPTION>' . $tpl['OPT_COLORS'];
+$tpl['T_SIZE']          = (EC_TEXT0)?EC_TEXT0:52;
+$tpl['S_LOGOUT']        = $s_logout;
+
+$h = fopen(EC_TPL1,'rb');
+$r = fread($h, filesize(EC_TPL1) + 1 );
+
+
+while(list($k,$v) = each($tpl)) {
+    $p[] = '#\{'.$k.'\}#';
+    $s[] = $v;
+}
+echo preg_replace($p,$s,$r);
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML>
-<HEAD>
-<TITLE><?php echo $NOME_CHAT; ?></TITLE>
-
-<STYLE TYPE="text/css" TITLE="">
-.table1 {background-color:#F1F1F1;background-image:url('images/tab.gif');
-		border:0px solid ;border-color:#808080;
-		border-bottom-width:1px;border-right-width:1px;}
-.tab1 { text-indent: 3pt;}
-.tab1_ { text-indent: 3pt;border:0px solid ;border-color:#C0C0C0;
-	border-bottom-width:1px;}
-
-.titulo { font-family:Trebuchet Ms,Verdana,Helvetica,Tahoma,Arial,Serif;
-		font-size: 16pt; font-weight:bold;}
-.texto{font-family:Verdana, Tahoma; font-size:8pt;background-color:#F1F1F1;}
-
-body {font-family:Verdana, Tahoma; font-size:8pt;margin:3px;
-	SCROLLBAR-FACE-COLOR:#EEEEEE;SCROLLBAR-ARROW-COLOR:#808080;
-	SCROLLBAR-3DLIGHT-COLOR:#F0F0F0;SCROLLBAR-DARKSHADOW-COLOR:#808080;
-	SCROLLBAR-HIGHLIGHT-COLOR:#FFFFFF;SCROLLBAR-SHADOW-COLOR:#C0C0C0;
-	SCROLLBAR-TRACK-COLOR:#FFFFFF;}
-
-hr {color:#C0C0C0;height:1px;}
-input {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
-select {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
-.td {font-family:Verdana, Tahoma; font-size:8pt;}
-</STYLE>
-<SCRIPT LANGUAGE="JavaScript" type="text/javascript" src="script.js">
-</SCRIPT>
-<SCRIPT LANGUAGE="JavaScript">
-<!--
-<?php echo $PageScript; ?>
-//-->
-</SCRIPT>
-</HEAD>
-
-<BODY oncload="frm.text.focus();">
-<FORM name="frm" METHOD=POST ACTION="<?php echo $_SERVER['PHP_SELF'] . '?sala=' . $sala; ?>">
-<TABLE cellpadding="0" border=0 cellspacing="0" width="600" height="85"class="table1"  >
-<TR>
-	<TD class="tab1_" valign="middle" align="left" height="20">
-   <FONT class="titulo"><?php echo $NOME_CHAT; ?></FONT>
-	</TD>
-</TR>
-<TR>
-	<TD class="tab1" valign="middle" align="left" ><FONT class="td">
-	<?php
-	echo $SALA . ':';
-
-	//Gera os links para as salas do chat
-	for ($i = 1; $i < $NUMERO_SALAS + 1; $i++)
-	{
-		if ( $i == $sala )
-		{
-			echo "&nbsp;[$i]";
-		}else
-		{
-			echo '&nbsp;<A HREF="' . $_SERVER['PHP_SELF'] . '?sala=' . $i . '" >' . $i .'</A>';
-		}
-	}
-	?></FONT>
-	</TD>
-</TR>
-<TR>
-	<TD class="tab1" valign="middle" align="left"  height="20">
-	<TABLE width='100%'>
-	<TR>
-		<TD width='34%'><FONT class="td"><?php echo $MENSAGENS . ':' . $n_mensagens; ?></FONT></TD>
-		<TD width='33%'>&nbsp;</TD>
-		<?php
-			$ls = list_nick();
-			foreach ($ls as $val)
-			{
-				$u_opt .= '<OPTION>'.$val.'</OPTION>';
-		
-			}
-		?>
-		<TD width='33%'><FONT class="td"><?=$U_ONLINE;?>:</FONT><SELECT NAME=""><?=$u_opt;?></SELECT></TD>
-	</TR>
-	</TABLE>
-	</TD>
-</TR>
-</TABLE>
-
-<IFRAME NAME="cht" SRC="salas.php?abre=<?php echo $atual?>" WIDTH="600" height="200" style="bACKGROUND-color:#F1F1F1;">Seu navegador não suporta frames. <br>
-Para visualizar corretamente esta página atualize seu navegador ou instale um que suporte frames.</IFRAME>	
-
-<TABLE class="table1" width=600>
-<TR>
-	<TD><FONT class="td"><?php echo $NICK; ?>:</FONT></TD>
-	<TD>
-
-	<?php
-	
-	$nick_box1 = '<INPUT TYPE="text" size="40" NAME="nick" class="texto" value="' . $_SESSION['nick'] .
-		'">';
-	$nick_box2 = '<INPUT TYPE="hidden" size="40" NAME="nick" class="texto" value="' . $_SESSION['nick'] .
-		'">';
-	//Oculta/Mostra a caixa de texto do nick
-	if ( $_SESSION['nick'] )
-	{
-		echo '<FONT class="td">' . $_SESSION['nick'] . '&nbsp;&nbsp;&nbsp;&nbsp; [<A HREF="' .
-			$_SERVER['PHP_SELF'] . '?logout=y">' . $LOGOUT . '</A>]</FONT>' . $nick_box2;
-	}
-	else
-	{
-		echo $nick_box1;
-	}
-	?>
-	</TD>
-</TR>
-<tr><td>
-</td></tr> 
-
-<TR>
-	<TD><FONT class="td"><?php echo $TEXTO; ?>:</FONT></TD>
-	<TD><INPUT TYPE="text" size="40" class="texto" NAME="texto">&nbsp;&nbsp;
-	<?php
-	for ($i=0; $i<count( $styles ); $i++)
-	{
-		$opt_style .= "<OPTION value=\"$i\">$styles[$i]</OPTION>\n";
-	}
-		echo '<FONT class="td">' . $ESTILO . ':</FONT><SELECT NAME="bb" size="1" onchange="bbfontstyle(\'\')">' . $opt_style . '</select>';
-	
-	ksort( $smilies );
-	while( list( $name,$key ) = each( $smilies ) )
-	{
-		$opt_smilies .= '<OPTION value="' . $key . '">' . $name . '</OPTION>';
-	}
-		echo '&nbsp;<FONT class="td">Smilies:</FONT><SELECT NAME="smy" onchange="smilies();">' . $opt_smilies . '</SELECT>';
-	?>
-	
-	</TD>
-</TR>
-<TR>
-	<TD colspan=2 align="center" valign="middle">
-	<INPUT TYPE="submit" value="<?php echo $ENVIAR; ?>">&nbsp;&nbsp;&nbsp;
-	<INPUT TYPE="reset"value="<?php echo $LIMPAR; ?>">
-	</TD>
-	</tr>
-</TABLE>
-</FORM>
-<CENTER><A HREF="adm.php">Administração</A></CENTER>
-
