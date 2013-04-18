@@ -1,0 +1,44 @@
+// Instalando o Enygmata - Chat:
+
+Este é um software livre e voê pode modificar e distribuir como quiser.
+qualquer dúvida entre em contato: heuripedes@hotmail.com , enygmata_16@hotmail.com
+
+OBS :( para alunos da Escola técnica de palmas ):
+	Se você estiver na ETF-TO você pode me encontrar na sala do 2ºano
+do curso de Ensino Médio Integrado - Informática.
+
+REQUISITOS:
+- Servidor de Web que suporta php (Apache,Abyss,Xitami,IIS...)
+- PHP 4.1.1
+- 32 MB de RAM
+- 2 MB de espaço livre
+
+
+1 - Copie o arquivo enygmatachat_*.*.rar ou enygmatachat_*.*.zip para um diretório qualquer
+2 - Descompacte-o no mesmo diretório
+* Arquivos:
+ /-enygmatachat/
+       |
+       |-images/
+       | |-tab.gif
+       |
+       |-texto/
+       |  
+       |-index.php
+       |-config.php
+       |-func.php
+       |-salas.php
+       |-script.js
+       |-info.txt
+       |-leia.txt
+
+3 - Você precisa dar todas as permissões à pasta texto
+4 - Configure o chat:
+		
+		Mudando o nome do chat =
+		abra o arquivo config.php num editor e procure a seguinte linha
+			$NOME_CHAT = 'Enygmata Chat';
+		substitua 'Enygmata Chat' pelo nome do seu site exemplo:
+			$NOME_CHAT = 'Meu Chat';
+
+5 - Pronto você já pode utilizar o chat

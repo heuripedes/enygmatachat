@@ -1,0 +1,56 @@
+Enygmata - chat:
+
+
+$Versão_atual = 3.0 ;
+$Data_de_publicação = 15/04/06 ; 
+$Data_da_primeira_versão = 10/03/06 ;
+$Criador = Higor Euripedes (enygmata) ;
+$Email_do_criador[] = heuripedes@hotmail.com ;
+$Email_do_criador[] = enygmata_16@hotmail.com ;
+
+----Change log
+
+1.0 - Primeira versão publicada
+
+1.2 - Retirado o link de atualização
+
+1.5 - Adicionado controle de numero de salas
+
+1.7 - Aperfeiçoamento de design
+
+2.0.1 - Correção de administração de sessões
+
+2.0.2 - Adicionado administração de chat
+
+2.0.5 - Corrigido o problema de atualização automática: atualização à cada 5 segundos
+
+2.0.7 - Recolocado o link de atualização e adicionado informações de data e hora
+
+2.0.7.2 - Função BBCode Parser incluida e modificada
+
+2.0.8.2 - Otimização do sistema de usuário: o usuário só digita seu nome uma vez.
+		- Usuário pode fazer logout
+
+2.1 - Melhorada a execução do script
+
+2.1.1 - Correçao do erro que adicionava "\" antes de aspas, aspas simples e "\" (addslashes)
+
+2.1.2 - Login fixo entre as salas
+
+2.2 - adição de possibilidade de alteração de senha de administrador
+	  - adição de possibilidade de execução em modo de depuração
+
+3.0 - Alterada toda a execução dos scripts para maior performance
+	- Limpeza das salas toda vez que o número máximo de mensagens é alcançado
+	- Sistema da armazenamento de login otimizado
+	- Aparência otimizada
+	- Novas funções de execução adicionadas para melhor execução dos scripts
+	- Sistema de exibição de páginas totalmente reconstruido e revisado
+	- Criação instantânea de arquivos de sala
+	- Permição para configuração do chat
+	- Atualização automática a cada 4 segundos
+
+Change log---
+
+
+
