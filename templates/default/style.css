@@ -11,15 +11,20 @@ a:hover{font-family:Verdana, Tahoma; font-size:8pt;color:#F00000;}
 
 .msg1 {border-style:solid; border-width:1px;border-color:#B0B0B0;
        background-color:#FDFDFD;font-family:Verdana, Tahoma;
-       font-size:8pt;margin:0px;height:20px;}
+       font-size:8pt;margin:0px;margin-bottom:2px;height:20px;
+	   padding:0px;
+	   }
 
 .msg2 {border-style:solid; border-width:1px;border-color:#000000;
        background-color:#F0F0F0;font-family:Verdana, Tahoma;
-       font-size:8pt;margin:0px;height:20px;}
-.tab_top { background-color:#F1F1F1;background-image:url('images/tabela.gif');
+       font-size:8pt;margin:0px;margin-bottom:2px;height:20px;
+	   padding:0px;
+	   }
+	   
+.tab_top { background-color:#F1F1F1;/*background-image:url('images/tabela.gif');*/
         border:0px solid ;border-color:#808080;
         border-bottom-width:1px;border-right-width:1px;}
-.tab_down {background-color:#F1F1F1;background-image:url('images/tabela2.gif');
+.tab_down {background-color:#F1F1F1;/*background-image:url('images/tabela2.gif');*/
         border:0px solid ;border-color:#808080;
         border-bottom-width:1px;border-right-width:1px;}
 .tab1 { text-indent: 3pt;}
@@ -29,5 +34,13 @@ a:hover{font-family:Verdana, Tahoma; font-size:8pt;color:#F00000;}
         font-size: 16pt; font-weight:bold;}
 .texto{font-family:Verdana, Tahoma; font-size:8pt;background-color:#F1F1F1;}
 hr {color:#C0C0C0;height:1px;}
-input,select {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+input,select {font-family:Verdana, Tahoma; font-size:8pt;
+	background-color:transparent;border-style:solid;border-width:1px;border-color:#c0c0c0; }
 .td {font-family:Verdana, Tahoma; font-size:8pt;}
+#chatDiv{
+width:600px;
+height:204px;
+}
+#hide #hide2 #hide3{
+	display:none;
+}

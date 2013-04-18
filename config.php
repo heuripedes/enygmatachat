@@ -1,47 +1,29 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * Este é o arquivo de configuração de sistema
- *
+ * Enygmata Chat
+ * --------------------
+ * Arquivo..: index.php 
+ * Autor....: Higor Euripedes "Enygmata" (heuripedes@hotmail.com)
+ * Editor...: Higor Euripedes "Enygmata" (heuirpedes@hotmail.com)
+ * Versão...: 4
+ * PHP......: 4.1+
  * 
- *
- * PHP versions 4.1.1 and 5
- *
- * LICENSE: This source file is subject to version 3.0 of the PHP license
- * that is available through the world-wide-web at the following URI:
- * http://www.php.net/license/3_0.txt.  If you did not receive a copy of
- * the PHP License and are unable to obtain it through the web, please
- * send a note to license@php.net so we can mail you a copy immediately.
- *
- * @category   Chat
- * @package    Enygmata Chat
- * @author     Higor Euripedes <heuripedes@hotmail.com>
- * @copyright  2006 The EC Group
- * @license    http://php.net/license/3_0.txt       PHP License 3.0
- * @license    http://gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version    CVS: $Id:$
- * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
- * @see        
- * @access     public
+ * +-Aviso:--------------------------------------------[_][ ][x]+
+ * | Este programa é livre e vocÊ pode editá-lo avontade desde  |
+ * | desde que mantenha o nome do criador no campo Autor acima. |
+ * +------------------------------------------------------------+
  */
 
-/**
- * Verifica se o chat está ativado
- */
+// Verificação de segurança
 if (EC_OK != TRUE) {
     die('Hacking attempt!');
 }
 
-/**
- * Cria a array de configuração interpretando um arquivo *.ini
- */
+// Array de configurações
 $ini_arq = 'ec_config.ini';
 $cfg = parse_ini_file($ini_arq);
 
-/**
- * Transforma as chaves de $cfg em constantes
- */
+// Criação de constantes de configuração
 while(list($k,$v) = each($cfg)) {
     if (!defined($k)) {
         define($k,$v,TRUE); 
@@ -50,9 +32,7 @@ while(list($k,$v) = each($cfg)) {
     unset($cfg[$k]);
 }
 
-/**
- * Se solicitado ativa o modo de depuração
- */
+// Se solicitado, ativa o modo de depuração
 if(EC_MODO_DEPURACAO != 0) {
     if(@phpversion() >= '5.0.0' && EC_MODO_DEPURACAO == 2) {
         error_reporting(E_ALL | E_STRICT);
@@ -61,9 +41,9 @@ if(EC_MODO_DEPURACAO != 0) {
     }
 }
 
-/**
- * Inclui o arquivo de linguagem
- */
- $Langs = 'ptbr,enus';
-include('lang/' . EC_LINGUAGEM . '.php'); 
+// Inclusão do arquivo de linguagem
+$Langs = 'ptbr,enus';
+include('lang/' . EC_LINGUAGEM . '.lang.php'); 
+
+@session_start();
 ?>

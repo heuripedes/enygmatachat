@@ -1,30 +1,28 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * Este contem algumas funções auxiliares ao EC
- *
+ * Enygmata Chat
+ * --------------------
+ * Arquivo..: functions.inc.php 
+ * Autor....: Higor Euripedes "Enygmata" (heuripedes@hotmail.com)
+ * Editor...: Higor Euripedes "Enygmata" (heuirpedes@hotmail.com)
+ * Versão...: 4
+ * PHP......: 4.1+
  * 
- *
- * PHP versions 4.1.1 and 5
- *
- * LICENSE: This source file is subject to version 3.0 of the PHP license
- * that is available through the world-wide-web at the following URI:
- * http://www.php.net/license/3_0.txt.  If you did not receive a copy of
- * the PHP License and are unable to obtain it through the web, please
- * send a note to license@php.net so we can mail you a copy immediately.
- *
- * @category   Chat
- * @package    Enygmata Chat
- * @author     Higor Euripedes <heuripedes@hotmail.com>
- * @copyright  2006 The EC Group
- * @license    http://php.net/license/3_0.txt       PHP License 3.0
- * @license    http://gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version    CVS: $Id:$
- * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
- * @see        
- * @access     public
+ * +-Aviso:--------------------------------------------[_][ ][x]+
+ * | Este programa é livre e vocÊ pode editá-lo avontade desde  |
+ * | desde que mantenha o nome do criador no campo Autor acima. |
+ * +------------------------------------------------------------+
  */
+
+// Constante de segurança do chat
+define('EC_OK',TRUE);
+
+// Inclusões
+require_once ('config.php');           // Arquivo de configurações
+require_once ('classes/ec.class.php'); // Classe Enygmata_Chat
+require_once ('classes/bw.class.php'); // Classe BarWordFilter
+require_once('functions.inc.php');     // Arquivo de Funções adicionais
+
 function ping_server($n = 4,$t = 5)
 {
     $s = microtime();
@@ -63,6 +61,15 @@ function IniSet($k,$v,$q=FALSE) {
     }
 
     Enygmata_chat::escreve('ec_config.ini',implode("\r\n",$iniarr));
+}
+
+function convertChars($txt) {
+	$ch = array( 'Á' => '&Aacute;', 'Í' => '&Iacute;', 'Ó' => '&Oacute;', 'Ú' => '&Uacute;', 'É' => '&Eacute;', 'Ä' => '&Auml;', 'Ï' => '&Iuml;', 'Ö' => '&Ouml;', 'Ü' => '&Uuml;', 'Ë' => '&Euml;', 'À' => '&Agrave;', 'Ì' => '&Igrave;', 'Ò' => '&Ograve;', 'Ù' => '&Ugrave;', 'È' => '&Egrave;', 'Ã' => '&Atilde;', 'Õ' => '&Otilde;', 'Â' => '&Acirc;', 'Î' => '&Icirc;', 'Ô' => '&Ocirc;', 'Û' => '&Ucirc;', 'Ê' => '&Ecirc;', 'á' => '&aacute;', 'í' => '&iacute;', 'ó' => '&oacute;', 'ú' => '&uacute;', 'é' => '&eacute;', 'ä' => '&auml;', 'ï' => '&iuml;', 'ö' => '&ouml;', 'ü' => '&uuml;', 'ë' => '&euml;', 'à' => '&agrave;', 'ì' => '&igrave;', 'ò' => '&ograve;', 'ù' => '&ugrave;', 'è' => '&egrave;', 'ã' => '&atilde;', 'õ' => '&otilde;', 'â' => '&acirc;', 'î' => '&icirc;', 'ô' => '&ocirc;', 'û' => '&ucirc;', 'ê' => '&ecirc;', 'Ç' => '&Ccedil;', 'ç' => '&ccedil;;'
+    );
+    foreach($ch as $c => $e){
+        $txt = str_replace($c,$e,$txt);
+    }
+    return $txt;
 }
 
 

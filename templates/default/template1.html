@@ -4,18 +4,28 @@
       {EC_CHAT}
     </title>
 	<link rel="stylesheet" type="text/css" href="templates/default/style.css">
-    <script language="javascript" type="text/javascript"src="script.js">
-    </script>
+    <script language="javascript" type="text/javascript"src="javascripts/script.js"> </script>
+    <script language="javascript" type="text/javascript"src="javascripts/chat.js"></script>
+    <script language="javascript" type="text/javascript"src="javascripts/ajaxall.js"></script>
     <script type="text/javascript" language="javascript">
-//<![CDATA[
 <!--
 {EC_JSCRIPT}
+
+function LoadMsgs() { 
+
+	Ajax.set('gerasala.php','abre={ATUAL_SALA}','txt','chatDiv',function(){Ajax.writeId();});
+	Ajax.get();
+	setTimeout('LoadMsgs()',800);
+	
+}
 //-->
-        //]]>
     </script>
   </head>
-  <body onload="foc();MM_preloadImages('templates/default/images/tabela.gif','templates/default/images/tabela2.gif');">
-    <form name="frm" method="post" action="{SELF}?sala={ATUAL_SALA}" >
+  <body onload="LoadMsgs();document.frm.texto.focus();">
+  <div id="hide"></div>
+    <form name="frm" id="frm" onsubmit="send();return false;" method="post" action="{SELF}?sala={ATUAL_SALA}" >
+	<input type="hidden" name="sala" value="{ATUAL_SALA}"><input type="hidden" id="md5" value="">
+
       <table cellpadding="0" border="0" cellspacing="0" width="600" height="85" class="tab_top">
         <tr>
           <td class="tab1_" valign="middle" align="left"
@@ -31,64 +41,42 @@
         <tr>
           <td class="tab1" valign="middle" align="left"
           height="20">
-            <table width='100%'>
-              <tr>
-                <td width='34%'>
-                  <font
-                  class="td">{S_MENSAGENS}:{S_N_MENSAGENS}</font>
-                </td>
-                <td width='33%'>
-                   
-                </td>
-                <td width='33%'>
-                  <font class="td"> </font>
-                </td>
-              </tr>
-            </table>
-          </td>
+           </td>
         </tr>
       </table>
-      <iframe name="cht" src="salas.php?abre={ATUAL_SALA}" width="600" height="200" style="bACKGROUND-color:#F1F1F1;">
-			Seu navegador n&#227;o suporta frames.<br /> Para visualizar corretamente esta p&#225;gina atualize seu
-      navegador ou instale um que suporte frames.</iframe> 
+	  <!-- CHat -->
+     <div id="chatDiv"></div>			
+	 <!-- CHat -->
       <table cellspacing="0" cellpadding="0" class="tab_down" width="600" height="97">
         <tr>
           <td colspan="2">
-            <font class="td"> {S_NICK}: 
-            {NICK_BOX}  {S_LOGOUT}</font>
+            <font class="td"> {S_NICK}: <input type="text" size="40" maxlength="{T_SIZE}" name="nick"  value="{NICK_BOX}">  {S_LOGOUT}</font>
           </td>
         </tr>
         <tr>
           <td>
             <font class="td"> {S_ESTILO}:</font>
 						<select name="bb" size="1" onchange="bbfontstyle('')">{OPT_STYLE}</select>
-			&nbsp;&nbsp;
+			<!-- &nbsp;&nbsp;
             <font class="td">{S_SMILIES}:</font>
-						<select name="smy" onchange="smilies();">{OPT_SMILIES}</select>
+						<select name="smy" onchange="smilies();">{OPT_SMILIES}</select> -->
             &nbsp;&nbsp;
 			<font class="td">{S_COLORS}:</font>
 						<select name="cor1" onchange="addcolor();">{OPT_COLORS}</select>
 			&nbsp;&nbsp;
 			<font class="td">{S_THEME}:</font>
-						<select name="thema" >{OPT_THEMES}</select>
+						<select name="thema" onchange="changeTheme();">{OPT_THEMES}</select>
 
           </td>
         </tr>
         <tr>
           <td colspan="2">
             <font class="td"> {S_TEXTO}:</font>
-						<input type="text" size="40" maxlength="{T_SIZE}" name="texto" />
+						<input type="text" size="40" maxlength="{T_SIZE}" name="texto" /> <input type="submit" value="{S_ENVIAR}" />
           </td>
-          <td>
-             
-          </td>
+          
         </tr>
-        <tr>
-          <td colspan="3" align="center" valign="middle">
-            <input type="submit" value="{S_ENVIAR}" />
-						<input type="reset" value="{S_LIMPAR}" />
-          </td>
-        </tr>
+
       </table>
     </form>
       <a href="adm.php">{S_ADMINISTRACAO}</a>

@@ -1,213 +1,123 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * Este é o arquivo de exibição principal
- *
+ * Enygmata Chat
+ * --------------------
+ * Arquivo..: index.php 
+ * Autor....: Higor Euripedes "Enygmata" (heuripedes@hotmail.com)
+ * Editor...: Higor Euripedes "Enygmata" (heuirpedes@hotmail.com)
+ * Versão...: 4
+ * PHP......: 4.1+
  * 
- *
- * PHP versions 4.1.1 and 5
- *
- * LICENSE: This source file is subject to version 3.0 of the PHP license
- * that is available through the world-wide-web at the following URI:
- * http://www.php.net/license/3_0.txt.  If you did not receive a copy of
- * the PHP License and are unable to obtain it through the web, please
- * send a note to license@php.net so we can mail you a copy immediately.
- *
- * @category   Chat
- * @package    Enygmata Chat
- * @author     Higor Euripedes <heuripedes@hotmail.com>
- * @copyright  2006 The EC Group
- * @license    http://php.net/license/3_0.txt       PHP License 3.0
- * @license    http://gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version    CVS: $Id:$
- * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
- * @see        
- * @access     public
+ * +-Aviso:--------------------------------------------[_][ ][x]+
+ * | Este programa é livre e vocÊ pode editá-lo avontade desde  |
+ * | desde que mantenha o nome do criador no campo Autor acima. |
+ * +------------------------------------------------------------+
  */
 
-/**
- * Esta variável define que o EC pode funcionar comsegurança
- */
+// Constante de segurança do chat
 define('EC_OK',TRUE);
 
-/**
- * Inclui o arquivo de configuração
- */
-require_once ('config.php');
+// Inclusões
+require_once ('config.php');           // Arquivo de configurações
+require_once ('classes/ec.class.php'); // Classe Enygmata_Chat
+require_once ('classes/bw.class.php'); // Classe BarWordFilter
+require_once('functions.inc.php');     // Arquivo de Funções adicionais
 
-/**
- * Inclui o arquivo com a classe principal: Enygmata_Chat
- */
-require_once ('classes/ec.class.php');
-
-/**
- * Inclui o arquivo com a classe BadWords
- */
-require_once ('classes/bw.class.php');
-
-
-/**
- *Inclui o arquivo de funções adicionais
- */
-require_once('functions.inc.php');
-
-/**
- * Verifica se o chat está bloqueado
- */
+// Verificação de bloqueio
 if (EC_BLOQUEAR != 0) {
-    exit;    
+    die($lng['travado']);
 }
 
-
-/**
- * Inicia a sessão atual
- */
-session_start();
- //echo '<pre>session<br>';print_r($_SESSION);echo '<br>cookie<br>';print_r($_COOKIE);exit;
-/**
- * Corige o número máximo de salas em caso de erro
- */
+// Inicio da sessão
+@session_start();
+ 
+// Correção do nº máximo de salas
 if (EC_NUM_SALAS > 25) {
 	define('EC_NUM_SALAS', 30);
 }
 
-/**
- * Corrige o número da sala em caso de erro
- */
-if ($_GET['sala'] >= EC_NUM_SALAS) {
-	$_GET['sala'] = EC_NUM_SALAS;
-}
-if ($_GET['sala'] < 1 ) {
+// Medida de correção do nº de sala em caso de erro
+//INICIO
+if(!$_GET['sala']) {
     $_GET['sala'] = 1;
 }
-if ($_GET['sala'] == '' ) {
-    $_GET['sala'] = 1;
+if(!$_POST['sala']) {
+    $_POST['sala'] = $_GET['sala'];
 }
+if($_POST['sala'] >= EC_NUM_SALAS) {
+	$_POST['sala'] = EC_NUM_SALAS;
+}
+if ($_POST['sala'] <= 1 ) {
+    $_POST['sala'] = 1;
+}//FIM
 
-/**
- * Configura o arquivo da sala atual, define suaconstante e apaga a variável
- */
-$atual =  EC_PREFIX . 'sala' . $_GET['sala'];
+// Configuração do arquivo de sala atual
+$atual =  EC_PREFIX . 'sala' . $_POST['sala'];
 $arq_atual = 'texto/' . $atual . '.txt';
 define('EC_ARQ',$atual);
 define('EC_ATUAL_ARQ', $arq_atual);
-unset($atual);
-unset($arq_atual);
 
-/**
- * Inicia a classe Enygmata Chat
- */
-$ec = ec(EC_ATUAL_ARQ,$lng['anonimo'],$lng['admin'],$lng['entrou'],$lng['saiu']);
+// Prevenção contra a inexistência do arquivo de sala
+if (!file_exists(EC_ATUAL_ARQ)) {	
+	$fp = @fopen(EC_ATUAL_ARQ, 'wb');
+	@fclose($fp);
+}
 
-/**
- * Inicia a classe Enygmata Chat
- */
+// Instanciação da classe EnygmataChat
+$ec = ec($arq_atual, $lng['anonimo'], $lng['admin'], $lng['entrou'], $lng['saiu']);
+
+// Instanciação da classe BadWords
 $bw = new BadWords;
 
-/**
- * Bloqueia o chat se configurado para isso
- */
-if(EC_BLOQUEAR == 1) {
-    $ec->msg2($lng['travado'],$lng['noticia']);
-	exit;
-}
-
-/**
- * Salva o tema do usuário
- */
-if($_POST['thema']) {
-    $_SESSION['style'] = $_POST['thema'];
-}
-
-
-/**
- * Seta as palavras ruins
- */
+// Definição das palavras ruins
 if(EC_BW_SEARCH) {
     $bw->setWords(explode(',',EC_BW_SEARCH));
 }
 
-/**
- * Gerencia as variáveis de post e session para que não oorram erros
- */
+// Salva o tema do usuário
+if($_POST['thema']) {
+    $_SESSION['style'] = $_POST['thema'];
+}
+
+// Rotina de gerênciamento de variáreis POST e SESSION
+//INICION
 if($_POST['nick'] && !$_POST['texto']) {
-    /**
-     * Registrar nick
-     */
-     $_POST['nick'] = $bw->goChanges($_POST['nick']);
+
+    // Registro de nick
+    $_POST['nick'] = $bw->goChanges($_POST['nick']);
     $ec->regNick($_POST['nick']);
     unset($_POST['nick']);
+
 }elseif($_POST['nick'] && $_POST['texto']){
-    /**
-     * Registrar Nick ezvaziar o buffer e cria mensagem
-     */
+
+    // Registro de nick e envio de mensagem
     $_POST['nick'] = $bw->goChanges($_POST['nick']);
     $ec->regNick($_POST['nick']);
     unset($_POST['nick']);
     $_POST['texto'] = $bw->goChanges($_POST['texto']);
     $ec->msg($_SESSION['nick'], $_POST['texto']);
     unset($_POST['texto']);
-}elseif($_SESSION['nick'] && $_POST['texto']){
-    /**
-     * Criar mensagem
-     */
-    $_POST['texto'] = $bw->goChanges($_POST['texto']);
-    $ec->msg($_SESSION['nick'], $_POST['texto']);
-}
+}//FIM
 
-/**
- * Se for solicitado, o logoff é efetuado e o usuário é redirecionado
- */
+// Efetua o logoff se for solicitado
 if ($_GET['logout'] == 'y') {
     $ec->unregNick();
     echo "<SCRIPT>location.href = '" . $_SERVER['PHP_SELF'] . "?sala=" . $_GET['sala'] . "';</SCRIPT>";
 }
 
-/**
- * Define o ip do usuário
- * Cria as costantes EC_CUR_IP e EC_CUR_NICK
- */
+// Informações do usuário
 $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
-define('EC_CUR_IP',$_SESSION['ip']);
-$eb  = 'bbCode';
+define('EC_CURRENT_IP',$_SESSION['ip']);
 $hsc = 'htmlspecialchars';
-define('EC_CUR_NICK',stripslashes($ec->$eb($hsc($_SESSION['nick']))));
+define('EC_CUR_NICK',stripslashes($hsc($_SESSION['nick'])));
 unset($eb);
 unset($hsc);
 
-/**
- * Se o arquivo da sala atual não existe é criaado
- */
-if (!file_exists(EC_ATUAL_ARQ)) {	
-	$fp = @fopen(EC_ATUAL_ARQ, 'wb');
-	@fclose($fp);
-}
 
 
-/**
- * Calcula o número de mensagens enviadas
- */
-$n_mensagens = $ec->getNumMsgs();
 
-/**
- * Limpa as mensagens se o número delas for igual ou maior que o número máximo de 
- * mensagens. Define a variável
- */
-if ($n_mensagens >= EC_MAX_MSG) {	
-	$ec->limpa(EC_ATUAL_ARQ);
-}
-if ($n_mensagens < 0 || $n_mensagens > EC_MAX_MSG) {
-    unset($n_mensagens);
-    $n_mensagens = 0;	
-    define('EC_N_MSG',0,TRUE);
-}else{
-    define('EC_N_MSG',$n_mensagens,TRUE);
-}
-
-/**
- * Define os estilos de texto
- */
+// Definições visuais
+//INICIO
 $styles = array(
     $stlng['negrito']    => '0',
     $stlng['italico']    => '1',
@@ -215,9 +125,6 @@ $styles = array(
     $stlng['link']       => '3' 
 );
 
-/**
- * Define os smilies
- */
 $smilies = array(
     $slng['risada'] => '1',
     $slng['choro']  => '2',
@@ -231,9 +138,6 @@ $smilies = array(
     $slng['legal']  =>'10'
 );
 
-/**
- * Define as cores
- */
 $cores = array(
     $clng['azul1']     => '#0000ff',
     $clng['azul2']     => '#6600cc',
@@ -251,14 +155,8 @@ $cores = array(
     $clng['marrom']    => '#804000'
     );
 
-/**
- * Definições de layout
- */
 
-/**
- * Definições de layout: Lista de salas
- */
-for ($i = 1; $i < EC_NUM_SALAS + 1; $i++) {
+for ($i = 1; $i < EC_NUM_SALAS + 1; $i++) { // Exibição dos nºs de salas
     if ($i == $_GET['sala']) {
         $tpl['S_N_SALA'] .= "&nbsp;[$i]";
     }else {
@@ -266,71 +164,64 @@ for ($i = 1; $i < EC_NUM_SALAS + 1; $i++) {
     }
 }
 
-/**
- * Definições de layout: Nick box
- */
-$nick_box1     = '<INPUT TYPE="text" size="40" maxlength="' . EC_TAM_NICK . '" NAME="nick"  value="Usr_' .mt_rand(11111,99999) . '">';
-$nick_box2     = '';
-if (EC_CUR_NICK)
-{
-    $tpl['NICK_BOX'] = '<FONT class="td">' . EC_CUR_NICK . '</FONT>';
-}
-else
-{
-    $tpl['NICK_BOX'] = $nick_box1;
-}
 
-/**
- * Definições de layout: Lista de estilos
- */
+
+
+// Lista de estilos
 ksort($styles);
 while(list($k,$n) = each($styles)) {
-    $tpl['OPT_STYLE'] .= "<OPTION value=\"$n\">$k</OPTION>\n";
+    $tpl['OPT_STYLE'] .= "<option value=\"$n\">$k</option>\n";
 }
 
-/**
- * Definições de layout: Lista de similies
- */
-ksort($smilies);
+// Lista de smilies
 while(list($name,$key) = each( $smilies))
 {
-    $tpl['OPT_SMILIES'] .= '<OPTION value="' . $key . '">' . $name . '</OPTION>';
+    $tpl['OPT_SMILIES'] .= '<option value="' . $key . '">' . $name . '</option>';
 }
 
+// Link de logoff
 if ($_SESSION['nick']) {
     $s_logout = '[<A HREF="' . $_SERVER['PHP_SELF'] . '?logout=y">' . $lng['logout'] . '</A>]';
 }else{
     $s_logout = '';
 }
 
-/**
- * Definições de cores
- */
+// Lista de cores
 ksort($cores);
 while(list($k,$v) = each($cores)) {
-    $tpl['OPT_COLORS'] .= '<OPTION value="'.$v.'">'.$k.'</OPTION>';
+    $tpl['OPT_COLORS'] .= '<option value="'.$v.'">'.$k.'</option>';
 }
 
-/**
- * Definições de temas
- */
+// Lista de temas
 $d = dir("templates/");
 while (false !== ($y = $d->read())) {
     if($y != '.' && $y != '..' && @is_dir('templates/'.$y)) {
-        if($_SESSION['style'] == $y) {
+      if($_SESSION['style'] == $y) {
             $oth = ' selected ';
         }else{
             $oth = '';
         }
-        $tpl['OPT_THEMES'] .= '<OPTION value="'.$y.'"' . $oth .'>'.$y.'</OPTION>';
+        $tpl['OPT_THEMES'] .= '<option value="'.$y.'"' . $oth .'>'.$y.'</option>';
     }
 }
 $d->close();
 
 $cteT = $_EC['EC_TEXT0'];
+
 /**
- * Definições de layout: Definições
+ * DefiniÃ§Ãµes de layout: DefiniÃ§Ãµes
  */
+ if (!EC_CUR_NICK)
+{
+    $tpl['NICK_BOX'] = 'usr_' .mt_rand(11111,99999);
+}
+else
+{
+    $tpl['NICK_BOX'] = EC_CUR_NICK;
+}
+
+
+$tpl['HASH']            = md5($ec->ler($arq_atual));
 $tpl['S_MENSAGENS']     = $lng['mensagens'];
 $tpl['S_N_MENSAGENS']   = EC_N_MSG;
 $tpl['S_NICK']          = $lng['nick'];
@@ -354,7 +245,6 @@ $tpl['OPT_THEMES']      = '<OPTION ></OPTION>' . $tpl['OPT_THEMES'];
 $tpl['T_SIZE']          = ($cteT)?$cteT:52;
 $tpl['S_LOGOUT']        = $s_logout;
 
-//$_SESSION['style'] = 'default';
 $tfile = $_SESSION['style'] ? $_SESSION['style']: EC_TEMPLATE;
 $template = strtolower('templates/' . $tfile . '/template1.html');
 $h = fopen($template,'rb');
@@ -365,6 +255,7 @@ while(list($k,$v) = each($tpl)) {
     $r = @str_replace('{'.$k.'}',$v,$r);
 }
 echo $r;
+echo mt_rand(0,99)%2?' ':'';;
 ?>
 <PRE>
 

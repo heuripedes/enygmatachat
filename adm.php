@@ -1,105 +1,61 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * Este é o arquivo da Administração
- *
+ * Enygmata Chat
+ * --------------------
+ * Arquivo..: adm.php 
+ * Autor....: Higor Euripedes "Enygmata" (heuripedes@hotmail.com)
+ * Editor...: Higor Euripedes "Enygmata" (heuirpedes@hotmail.com)
+ * Versão...: 4
+ * PHP......: 4.1+
  * 
- *
- * PHP versions 4.1.1 and 5
- *
- * LICENSE: This source file is subject to version 3.0 of the PHP license
- * that is available through the world-wide-web at the following URI:
- * http://www.php.net/license/3_0.txt.  If you did not receive a copy of
- * the PHP License and are unable to obtain it through the web, please
- * send a note to license@php.net so we can mail you a copy immediately.
- *
- * @category   Chat
- * @package    Enygmata Chat
- * @author     Higor Euripedes <heuripedes@hotmail.com>
- * @copyright  2006 The EC Group
- * @license    http://php.net/license/3_0.txt       PHP License 3.0
- * @license    http://gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version    CVS: $Id:$
- * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
- * @see        
- * @access     public
+ * +-Aviso:--------------------------------------------[_][ ][x]+
+ * | Este programa é livre e vocÊ pode editá-lo avontade desde  |
+ * | desde que mantenha o nome do criador no campo Autor acima. |
+ * +------------------------------------------------------------+
  */
 
-
-/**
- * Esta variável define que o EC pode funcionar comsegurança
- */
+// Constante de segurança do chat
 define('EC_OK',TRUE);
 
-/**
- * Inclui o arquivo de configuração
- */
-require_once ('config.php');
+// Inclusões
+require_once ('config.php');           // Arquivo de configurações
+require_once ('classes/ec.class.php'); // Classe Enygmata_Chat
+require_once ('classes/bw.class.php'); // Classe BarWordFilter
+require_once('functions.inc.php');     // Arquivo de Funções adicionais
 
-/**
- * Inclui o arquivo com a classe principal: Enygmata_Chat
- */
-require_once ('classes/ec.class.php');
-
-/**
- *Inclui o arquivo de funções adicionais
- */
-require_once('functions.inc.php');
-
-/**
- * Inicia a sessão atual
- */
+// Inicio da sessão
 @session_start();
 
-/**
- * Inicia a classe Enygmata Chat
- */
-$ec = ec('',$lng['anonimo'],$lng['admin'],$lng['entrou'],$lng['saiu']);
+// Instanciação da classe EnygmataChat
+$ec = ec($arq_atual, $lng['anonimo'], $lng['admin'], $lng['entrou'], $lng['saiu']);
 
-/**
- * Código randômico
- */
- $randCode = mt_rand(0,9) . mt_rand(0,9) . mt_rand(0,9) . mt_rand(0,9);
-/*echo '<pre>';
-print_r($_POST) ;
-print_r($_GET) ;
-print_r($_SESSION) ;
-print_r($_COOKIE) ;
-ksort($_EC);
-print_r($_EC);
-*/
-/**
- * Verifica se a senha foi enviada e se é correta
- */
- if(EC_AUTENTICACAO_IMAGEM == 1) {
-    if ($_POST['senha'] == EC_SENHA && $_POST['usuario'] == EC_ADMINISTRADOR && 
-        $_POST['img_code'] == $_POST['hidden_code']) {
-        $_SESSION['senha'] = $_POST['senha'];
-        $_SESSION['usuario'] = $_POST['usuario'];
-    }
- }else{
-    if ($_POST['senha'] == EC_SENHA && $_POST['usuario'] == EC_ADMINISTRADOR) {
-        $_SESSION['senha'] = $_POST['senha'];
-        $_SESSION['usuario'] = $_POST['usuario'];
-        
-    }
- }
+// Código randomico
+$randCode = mt_rand(0,9) . mt_rand(0,9) . mt_rand(0,9) . mt_rand(0,9);
 
-/**
- * Se solicitado gera uma imagem
- */
+// Verifica se a senha foi enviada e se é correta
+
+if(EC_AUTENTICACAO_IMAGEM == 1) {
+	if ($_POST['senha'] == EC_SENHA && $_POST['usuario'] == EC_ADMINISTRADOR && 
+		$_POST['img_code'] == $_POST['hidden_code']) {
+		$_SESSION['senha'] = $_POST['senha'];
+		$_SESSION['usuario'] = $_POST['usuario'];
+	}
+}else{
+	if ($_POST['senha'] == EC_SENHA && $_POST['usuario'] == EC_ADMINISTRADOR) {
+		$_SESSION['senha'] = $_POST['senha'];
+		$_SESSION['usuario'] = $_POST['usuario'];
+	}
+}
+
+// Se solicitado gera uma imagem
 if($_GET['generate_image']) {
     imageID($_GET['generate_image']);
     exit;
 }
-/**
- * Ativa algumas rotinas se $_SESSION['senha'] não for nullo
- */
+// Ativa algumas rotinas se $_SESSION['senha'] não for nullo
 if (isset($_SESSION['senha'])) {
-    /**
-    * Se a limpeza de arquivos for solicitada a faça
-    */
+    
+	// Se a limpeza de arquivos for solicitada a faça
     if ($_GET['limpa_arq'] == 1) {
         $d = 'texto';
         $d = opendir($d);
@@ -109,48 +65,39 @@ if (isset($_SESSION['senha'])) {
             }
          }
     }
-    /**
-    * Se o logout for solicitado o faça
-    */
+    
+	// Se o logout for solicitado o faça
     if ($_GET['out'] == 1) {
         unset($_SESSION['usuario']);
         unset($_SESSION['senha']);
         @session_destroy();    
     }
 
-    /**
-     * Se desbloqueio de usuário for solicitado
-     */
-     if(base64_decode($_GET['ativar'])) {
+    // Se desbloqueio de usuário for solicitado
+    if(base64_decode($_GET['ativar'])) {
          $ec->unBan(base64_decode($_GET['ativar']));
      }
-    /**
-     * Se bloqueio de usuário for solicitado
-     */
+    
+	// Se bloqueio de usuário for solicitado
      if(base64_decode($_GET['desativar'])) {
          $ec->ban(base64_decode($_GET['desativar']));
      }
 
-    /**
-     * Se modificção de configuração for solicitada
-     */
+    // Se modificção de configuração for solicitada
      if($_POST['P']) {
-        /* while(list($k,$v) = each($_POST['PEC'])) {
-              IniSet($k,$v,1);
-         }
-         */
          foreach($_POST['P'] as $k => $v){
              IniSet($k,$v,1);
          }
-         //echo '<SCRIPT LANGUAGE="JavaScript">location.href = \'adm.php\'</SCRIPT>';
      }
+	 // Envio de mensagens
      if($_POST['msg_to_chat'] && $_POST['room_n']) {
+
          $p = ((int)$_POST['room_n'])?(int)$_POST['room_n']:1;
-        $atual =  EC_PREFIX . 'sala' . $p;
-        $arq_atual = 'texto/' . $atual . '.txt';
-        $ec->arq = $arq_atual;
-        $cr = $ec->admin;
-        $ec->admin = '';        
+         $atual =  EC_PREFIX . 'sala' . $p;
+         $arq_atual = 'texto/' . $atual . '.txt';
+         $ec->arq = $arq_atual;
+         $cr = $ec->admin;
+         $ec->admin = '';        
          $ec->msg($lng['admin'],$_POST['msg_to_chat']);
          $ec->admin = $cr;
      }
@@ -177,65 +124,12 @@ input{font-family:Arial,Trebuchet Ms,Helvetica,Arial;font-size:10pt;}
 </STYLE>
 <SCRIPT LANGUAGE="JavaScript">
 <!--
-var isDHTML  = 0;
-var isLayers = 0;
-var isAll    = 0;
-var isID     = 0;
+// Por favor deixe como está para o arquivo ficar pequeno
+var isDHTML  = 0; var isLayers = 0; var isAll    = 0; var isID     = 0;
+if (document.getElementByID) { isID    = 1; isDHTML = 1; }else{ if (document.all) { isAll   = 1; isDHTML = 1; }else{ browserVersion = parseInt(navigator.appVersion); if ((navigator.appName.indexOf('Netscape') != -1) && ( browserVersion == 4)) { isLayers = 1; isDHTML  = 1; } } }function findDOM(objectID,withStyle){ if (withStyle == 1) { if (isID) { return (document.getElementById(objectID).style); }else{ if (isAll) { return (document.all[objectID].style); }else{ if (isLayers) { return (document.layers[objectID]); } } } }else{ if (isID) { return (document.getElementById(objectID)); }else{ if (isAll) { return (document.all[objectID]); }else{ if (isLayers) { return (document.layers[objectID]); } } } } }
 
-if (document.getElementByID)
-{
-	isID    = 1;
-	isDHTML = 1;
-}else{
-	if (document.all)
-	{
-		isAll   = 1;
-		isDHTML = 1;
-	}else{
-		browserVersion = parseInt(navigator.appVersion);
-		if ((navigator.appName.indexOf('Netscape') != -1) && ( browserVersion == 4))
-		{
-			isLayers = 1;
-			isDHTML  = 1;
-		}
-	}
-}
-
-function findDOM(objectID,withStyle){
-	if (withStyle == 1)
-	{
-		if (isID)
-		{
-			return (document.getElementById(objectID).style);
-		}else{
-			if (isAll)
-			{
-				return (document.all[objectID].style);
-			}else{
-				if (isLayers)
-				{
-					return (document.layers[objectID]);
-				}
-			}
-		}
-	}else{
-		if (isID)
-		{
-			return (document.getElementById(objectID));
-		}else{
-			if (isAll)
-			{
-				return (document.all[objectID]);
-			}else{
-				if (isLayers)
-				{
-					return (document.layers[objectID]);
-				}
-			}
-		}
-	}
-}
 function HideShow(ID) {
+
     var o = findDOM(ID,1);
     if(o.display == 'none') {
         o.display = '';
@@ -329,10 +223,6 @@ for($i=1;$i<=EC_NUM_SALAS;$i++) {
         <TR>
             <TD>Numero de salas/Number of rooms:</TD>
             <TD><?php echo EC_NUM_SALAS ?></TD>
-        </TR>
-        <TR>
-            <TD >Numero max de msgs/Max mensage number:</TD>
-            <TD><?php echo EC_MAX_MSG;?></TD>
         </TR>
         </TABLE>
    </TD>

@@ -11,7 +11,7 @@ REQUISITOS:
 - Servidor de Web que suporta php (Apache,Abyss,Xitami,IIS...)
 - PHP 4.1.1
 - 32 MB de RAM
-- 2 MB de espaço livre
+- 100 KB de espaço livre
 
 
 1 - Copie o arquivo enygmatachat_*.*.rar ou enygmatachat_*.*.zip para um diretório qualquer
@@ -21,6 +21,7 @@ REQUISITOS:
        |
        |-classes/
        | |-ec.class.php
+	   | |-bw.class.php
        |
        |-images/
        | |-1.gif
@@ -34,53 +35,53 @@ REQUISITOS:
        | |-9.gif
        | |-10.gif
        |
+	   |-javascripts/
+	   | |-ajaxall.s
+	   | |-script.js
+	   |
        |-lang/
        | |-ptbr.php
        | |-enus.php
        |
        |-texto/
+	   |-*sala.txt
        |  
        |-index.php
        |-config.php
        |-functions.inc.php
        |-gerasala.php
-       |-salas.php
-       |-script.js
-       |-copyng.txt
+       |-copying.txt
        |-colaboradores.txt
        |-info.txt
 
 3 - Permissões
 	*No Windows:
 		Você precisa dar todas as permissões à pasta texto e seus arquivos (leitura,escrita, execução);
-		Você precisa dar todas as permissões ao arquivo ec_config.ini;
-		Você precisa dar todas as permissões ao diretório templates;
-
 	*No Unix:
 		Dê chmod 777 no diretório texto e para seus arquivos;
-		Dê chmod 777 no arquivo ec_config.ini;
-		Dê chmod 777 no diretório templates;
-
+	
 4 - Configure o chat:
-		abra o arquivo ec_config.ini num editor
+		-Inicie seu servidor(se não estiver iniciado) e entre no endereço :
+			http://enderecodoseuservidor/caminho/enygmatachat/adm.php
 
-		*Mudando o nome do chat =
-			 procure a seguinte linha
-				EC_CHAT="Enygmata Chat 3.3"';
-			substitua Enygmata Chat pelo nome desejado
-		*Mudando a senha do chat = 
-			procure a seguinte linha
-				EC_SENHA="1234";
-			substitua 1234 pela senha desejada.
-		*Mudando o nome do administrador
-			procure a seguinte linha
-				EC_NOME="Enygmata";
-			substitua Enygmata por um nome qualquer
-		*Mudando o Template do chat
-			procure a seguinte linha
-				EC_TPL="Default";
-			substitua Default para o template que vc tem no 
-			diretório template
+		-O usuário é admin
+		-a senha é 1234
+		
+		-vá para a sessão Configuração/Configuration
+		significado das configurações:
+			EC_TEMPLATE            = Layout do chat
+			EC_ADMINISTRADOR       = login do administrador
+			EC_AUTENTICACAO_IMAGEM = autenticação com imagem; 0 desativado,1 ativado
+			EC_BLOQUEAR            = bloqueio do chat; 0 desativar, 1 ativar
+			EC_BW_SEARCH           = lista de palavras ruins(separadas por virgulas)
+			EC_EMAIL  EC_LINGUAGEM = idioma do chat
+            EC_MODO_DEPURACAO      = ativar modo de depuração; 0 desativar, 1 ativar, 2 ativar extendido
+			EC_NOME_CHAT           = nome do chat
+			EC_NUM_SALAS           = numero de salas
+			EC_PREFIX              = prefixo das salas
+			EC_SENHA               = senha da administração 
+			EC_TAM_TEXTO           = tamanho maximo do nick e do texto
+
 
 
 5 - Pronto você já pode utilizar o chat
