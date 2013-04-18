@@ -5,6 +5,7 @@ $NUMERO_SALAS = 10;
 $MAX_MENSAGENS = 35;
 $PREFIXO = '';
 $SENHA = '1234';
+$ARQ_BANIDOS = 'banidos.txt';
 
 //Lang
 $ANONIMO = 'Anônimo';
@@ -18,5 +19,8 @@ $LOGOUT = 'Sair';
 $SERVIDOR = 'Servidor';
 $COR = 'Cor';
 $ESTILO = 'Estilo';
+$SAI_SALA = 'saiu da sala.';
+$ENTRA_SALA = 'entrou na sala.' ;
+$U_ONLINE = 'Usuários online';
 ?>
 

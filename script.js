@@ -33,14 +33,27 @@ function color2()
 	ft.value = ft.value + str + end;
 }
 
+function open_page(page,width,height){
+	window.open(page,'',width,height);
+}
+function open_page2(page){
+	window.open(page);
+}
+function smilies(){
+	fn = document.frm.texto;
+	fs = document.frm.smy;
+	document.frm.texto.value =  document.frm.texto.value + '[' + document.frm.smy.value + ']';
+}
 
-var imageTag = false;
-var theSelection = false;
+
 
 /*###############
 Apartir daqui o javascript foi tirado do sitema de
 forum phpBB e modificado.
 #################*/
+
+var imageTag = false;
+var theSelection = false;
 
 // Check for Browser & Platform for PC & IE specific bits
 // More details from: http://www.mozilla.org/docs/web-developer/sniffer/browser_type.html

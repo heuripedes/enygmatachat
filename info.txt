@@ -1,7 +1,7 @@
 Enygmata - chat:
 
 
-$Versão_atual = 3.0 ;
+$Versão_atual = 3.1 ;
 $Data_de_publicação = 15/04/06 ; 
 $Data_da_primeira_versão = 10/03/06 ;
 $Criador = Higor Euripedes (enygmata) ;
@@ -49,6 +49,11 @@ $Email_do_criador[] = enygmata_16@hotmail.com ;
 	- Criação instantânea de arquivos de sala
 	- Permição para configuração do chat
 	- Atualização automática a cada 4 segundos
+
+3.1     - Sistema de administração otimizado(bane/ativa usuários/ip)
+        - Arquivos interpretados na hora da exibição (acelera a execução do script)
+	- Smilies
+	- Lista de usuários
 
 Change log---
 

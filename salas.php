@@ -29,21 +29,29 @@ body {font-family:Verdana, Tahoma; font-size:8pt;margin:2px;
 include_once ( 'func.php' );
 include_once ( 'config.php' );
 
-//Configura o modo de manipulação de arquivos
-if ( $MODO_ARQUIVO == 1 )
-{
-	$MODO = 'b';
-}
-
 $abre = $_GET['abre'];
 
 $arq = 'texto/' . $abre . '.txt';
 //Abre arquivo , o lê e imprime na tela
-$fp = @fopen( $arq , 'r' . $MODO );
-@fpassthru( $fp );
+$fp = fopen( $arq , 'rb');
+$fr = fread( $fp,filesize( $arq )+1 );
+
+$m = obtem($fr);
+//$Nick|+|$ip|+|$now|+|$Texto
+for ($i=0; $i<count( $m ); $i++)
+{
+	if ( $m[$i][2] && $m[$i][0] && $m[$i][3] && !is_banido($m[$i][0])  )
+	{
+		$tpl = "<TABLE width=\"100%\" class=\"table1\"><TR><td>".
+			"<B>[" . $m[$i][0] ."</b> diz:<b>]&nbsp;<!-- <mensagem> --></B>" . $m[$i][3] ."</TD>".
+			"</TR></table><br>\n\n";
+		echo $tpl;
+	}
+}
 if ( !$fp )
 {
 	echo '<B>Erro:&nbsp;</B>O Arquivo correspondente ao nº da sala não existe!';
 }
 ?>
+<noframes>
 </body></html>

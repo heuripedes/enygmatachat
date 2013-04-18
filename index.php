@@ -35,8 +35,9 @@ $arq_atual = 'texto/' . $atual . '.txt';
 //Faz logout se for pedido
 if ( $_GET['logout'] == 'y' )
 {
-	gera_msg2 ('[color=#FFCC33]' . $SERVIDOR . '[/color]', 
-		'[color=#FFCC33]<B>' . bbcode( $_SESSION['nick'] ) . ' saiu da sala</B>[/color]');
+	echo  '<SCRIPT>location.href = \'' . $_SERVER['PHP_SELF'] . '?sala=' . $sala .'\';</SCRIPT>';
+	gera_msg2 ($_SESSION['nick'] , $SAI_SALA);
+	rem_nick( $_SESSION['nick']);
 	unset( $_SESSION['nick'] );
 	session_destroy(  );
 }
@@ -57,6 +58,24 @@ gera_msg();
 //Calcula o nº de posts
 $n_mensagens = n_mensagens();
 
+//Estilos
+$styles = array( 'Negrito','Itálico','Sublinhado', 'Link' );
+
+//Smilies
+$smilies = array(
+
+	'Risada' => '1',
+	'Choro' => '2',
+	'!' => '3',
+	'Ideia' => '4',
+	'Sério' => '5',
+	'?' => '6',
+	'Feliz' => '7',	
+	'Triste' => '8',
+	'Raiva' => '9',
+	'Legal' =>'10'
+);
+
 /*
 Limpa as mensagens se o número delas for igual ou maior que o número máximo de ->
  mensagens
@@ -67,45 +86,11 @@ if ( $n_mensagens >= $MAX_MENSAGENS )
 	limpa($arq_atual);
 }
 
-//Seta a variavel $nick com $_SESSION['nick']
-$nick = $_SESSION['nick'];
-
-
-//Cores
-$colors = array(
-	'#00FF00' => 'Verde',
-	'#008080' => 'Verde 2',
-	'#0000FF' => 'Azul',
-	'#0000A0' => 'Azul 2',
-	'#FF0000' => 'Vermelho',
-	'#B70000' => 'Vermelho 2',
-	'#000000' => 'Preto',
-	'#FFFF00' => 'Amarelo',
-	'#E8E800' => 'Amarelo 2',
-	'#FF80C0' => 'Rosa',
-	'#FF0080' => 'Rosa 2',
-	'#C0C0C0' => 'Cinza',
-	'#808080' => 'Cinza 2',
-	'#FF8040' => 'Laranja',
-	'#DD6F00' => 'Laranja 2',
-	'#FF80FF' => 'Lilás',
-	'#930093' => 'Roxo',
-	'#804000' => 'Marrom',
-);
-
-//Estilos
-$styles = array( 'Negrito','Itálico','Sublinhado', 'Link' );
-
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
 <TITLE><?php echo $NOME_CHAT; ?></TITLE>
-<META NAME="Generator" CONTENT="EditPlus">
-<META NAME="Author" CONTENT="">
-<META NAME="Keywords" CONTENT="">
-<META NAME="Description" CONTENT="">
-
 
 <STYLE TYPE="text/css" TITLE="">
 .table1 {background-color:#F1F1F1;background-image:url('images/tab.gif');
@@ -127,12 +112,19 @@ body {font-family:Verdana, Tahoma; font-size:8pt;margin:3px;
 
 hr {color:#C0C0C0;height:1px;}
 input {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+select {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;border-width:1px; }
+.td {font-family:Verdana, Tahoma; font-size:8pt;}
 </STYLE>
 <SCRIPT LANGUAGE="JavaScript" type="text/javascript" src="script.js">
 </SCRIPT>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+<?php echo $PageScript; ?>
+//-->
+</SCRIPT>
 </HEAD>
 
-<BODY>
+<BODY oncload="frm.text.focus();">
 <FORM name="frm" METHOD=POST ACTION="<?php echo $_SERVER['PHP_SELF'] . '?sala=' . $sala; ?>">
 <TABLE cellpadding="0" border=0 cellspacing="0" width="600" height="85"class="table1"  >
 <TR>
@@ -141,7 +133,7 @@ input {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;b
 	</TD>
 </TR>
 <TR>
-	<TD class="tab1" valign="middle" align="left" >
+	<TD class="tab1" valign="middle" align="left" ><FONT class="td">
 	<?php
 	echo $SALA . ':';
 
@@ -156,11 +148,27 @@ input {font-family:Verdana, Tahoma; font-size:8pt;background-color:transparent;b
 			echo '&nbsp;<A HREF="' . $_SERVER['PHP_SELF'] . '?sala=' . $i . '" >' . $i .'</A>';
 		}
 	}
-	?>
+	?></FONT>
 	</TD>
 </TR>
 <TR>
-	<TD class="tab1" valign="middle" align="left"  height="20"><?php echo $MENSAGENS . ':' . $n_mensagens; ?></TD>
+	<TD class="tab1" valign="middle" align="left"  height="20">
+	<TABLE width='100%'>
+	<TR>
+		<TD width='34%'><FONT class="td"><?php echo $MENSAGENS . ':' . $n_mensagens; ?></FONT></TD>
+		<TD width='33%'>&nbsp;</TD>
+		<?php
+			$ls = list_nick();
+			foreach ($ls as $val)
+			{
+				$u_opt .= '<OPTION>'.$val.'</OPTION>';
+		
+			}
+		?>
+		<TD width='33%'><FONT class="td"><?=$U_ONLINE;?>:</FONT><SELECT NAME=""><?=$u_opt;?></SELECT></TD>
+	</TR>
+	</TABLE>
+	</TD>
 </TR>
 </TABLE>
 
@@ -169,43 +177,49 @@ Para visualizar corretamente esta página atualize seu navegador ou instale um qu
 
 <TABLE class="table1" width=600>
 <TR>
-	<TD><?php echo $NICK; ?>:</TD>
+	<TD><FONT class="td"><?php echo $NICK; ?>:</FONT></TD>
 	<TD>
-	<?php
-	$nick_box1 = '<INPUT TYPE="text" size="40" NAME="nick" class="texto" value="' . $nick . '">&nbsp;&nbsp;';
-	$nick_box2 = '<INPUT TYPE="hidden" size="40" NAME="nick" class="texto" value="' . $nick . '">';
 
+	<?php
+	
+	$nick_box1 = '<INPUT TYPE="text" size="40" NAME="nick" class="texto" value="' . $_SESSION['nick'] .
+		'">';
+	$nick_box2 = '<INPUT TYPE="hidden" size="40" NAME="nick" class="texto" value="' . $_SESSION['nick'] .
+		'">';
 	//Oculta/Mostra a caixa de texto do nick
-	if ( $nick )
+	if ( $_SESSION['nick'] )
 	{
-		echo '<B>' . $nick . '</B>&nbsp;&nbsp;[<A HREF="' . $_SERVER['PHP_SELF'] . '?sala=' . $sala .
-			'&logout=y">' . $LOGOUT . '</A>]' . $nick_box2;
+		echo '<FONT class="td">' . $_SESSION['nick'] . '&nbsp;&nbsp;&nbsp;&nbsp; [<A HREF="' .
+			$_SERVER['PHP_SELF'] . '?logout=y">' . $LOGOUT . '</A>]</FONT>' . $nick_box2;
 	}
 	else
 	{
 		echo $nick_box1;
-		
-		while( list( $hex, $name ) = each( $colors ) )
-		{
-			$color_options .= "<OPTION value=\"$hex\">$name</OPTION>\n";
-		}
-
-		echo $COR . ':<SELECT  NAME="cor1" size="1" sort="true" onchange="color1()">' . $color_options . '</SELECT>';
 	}
 	?>
 	</TD>
 </TR>
+<tr><td>
+</td></tr> 
+
 <TR>
-	<TD><?php echo $TEXTO; ?>:</TD>
+	<TD><FONT class="td"><?php echo $TEXTO; ?>:</FONT></TD>
 	<TD><INPUT TYPE="text" size="40" class="texto" NAME="texto">&nbsp;&nbsp;
 	<?php
 	for ($i=0; $i<count( $styles ); $i++)
 	{
 		$opt_style .= "<OPTION value=\"$i\">$styles[$i]</OPTION>\n";
 	}
-		echo $ESTILO . ':<SELECT NAME="bb" size="1" onchange="bbfontstyle(\'\')">' . $opt_style . '</select>';
+		echo '<FONT class="td">' . $ESTILO . ':</FONT><SELECT NAME="bb" size="1" onchange="bbfontstyle(\'\')">' . $opt_style . '</select>';
 	
+	ksort( $smilies );
+	while( list( $name,$key ) = each( $smilies ) )
+	{
+		$opt_smilies .= '<OPTION value="' . $key . '">' . $name . '</OPTION>';
+	}
+		echo '&nbsp;<FONT class="td">Smilies:</FONT><SELECT NAME="smy" onchange="smilies();">' . $opt_smilies . '</SELECT>';
 	?>
+	
 	</TD>
 </TR>
 <TR>
@@ -213,7 +227,8 @@ Para visualizar corretamente esta página atualize seu navegador ou instale um qu
 	<INPUT TYPE="submit" value="<?php echo $ENVIAR; ?>">&nbsp;&nbsp;&nbsp;
 	<INPUT TYPE="reset"value="<?php echo $LIMPAR; ?>">
 	</TD>
-</TR>
+	</tr>
 </TABLE>
 </FORM>
 <CENTER><A HREF="adm.php">Administração</A></CENTER>
+
