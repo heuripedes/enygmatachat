@@ -23,8 +23,6 @@
  * @version    CVS: $Id:$
  * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
  * @see        
- * @since      File available since Release 3.2
- * @deprecated File deprecated in Release 3.3
  * @access     public
  */
 
@@ -38,18 +36,22 @@ if (EC_OK != TRUE) {
 /**
  * Configurações
  */
-$cfg['EC_CHAT']      = 'Enygmata Chat';           //Nome do chat
-$cfg['EC_SALAS']      = 10;                       //Número de salas
-$cfg['EC_MAX_MSG']    = 20;                       //Maximo de mensagens
-$cfg['EC_BLOQ']       = 0;                        //1 = Bloqueio do chat; 0 = desbloqueio do chat
-$cfg['EC_NOME']       = 'Enygmata';               //Nome do admin
-$cfg['EC_SENHA']      = '1234';                   //Senha do chat
-$cfg['EC_EMAIL']      = 'heuripedes@hotmail.com'; //Email do admin
-$cfg['EC_NICK']       = 25;                       //Tamanho do nick
-$cfg['EC_TEXTO']      = 52;                       //Tamanho do texto
-$cfg['EC_PREFIX']     = '';                       //Prefixo dos arquivosde sala
-$cfg['EC_TPL1']       = 'tpl1.html';              //Template do chat
-$cfg['EC_VERSAO']     = '3.2';                    // Versão
+$cfg['EC_CHAT']       = 'Enygmata Chat 3.2.2';           //Nome do chat
+$cfg['EC_SALAS']      = 10;                              //Número de salas
+$cfg['EC_MAX_MSG']    = 20;                              //Maximo de mensagens
+$cfg['EC_BLOQ']       = 0;                               //1 = Bloqueio do chat; 0 = desbloqueio do chat
+$cfg['EC_NOME']       = 'Enygmata';                      //Nome do admin
+$cfg['EC_SENHA']      = '1234';                          //Senha do chat
+$cfg['EC_EMAIL']      = 'heuripedes@hotmail.com';        //Email do admin
+$cfg['EC_NICK']       = 25;                              //Tamanho do nick
+$cfg['EC_TEXTO']      = 52;                              //Tamanho do texto
+$cfg['EC_PREFIX']     = '';                              //Prefixo dos arquivosde sala
+$cfg['EC_TPL1']       = 'tpl1.html';                     //Template do chat
+$cfg['EC_VERSAO']     = '3.2.2';                         // Versão
+$cfg['EC_REFRESH']    = 2;                               // Tempo de atualização(em segundos)
+$cfg['EC_AUTH']       = 1;                               // 1 = sessão; 2 cookie
+$cfg['EC_DEBUG_MODE'] = 0;                               // 0 = Desativar depuração; 1 = Ativar depuração;
+                                                         // 2 = Ativardepuração Maxima (PHP5+)
 
 /**
  * Linguagens oficiais desta versão:
@@ -65,10 +67,20 @@ while(list($k,$v) = each($cfg)) {
     if (!defined($k)) {
         define($k,$v); 
     }
+    $GLOBALS['_EC'][$k] = $v;
     unset($cfg[$k]);
 }
 
-
+/**
+ * Se solicitado ativa o modo de depuração
+ */
+if(EC_DEBUG_MODE != 0) {
+    if(@phpversion() >= '5.0.0' && EC_DEBUG_MODE == 2) {
+        error_reporting(E_STRICT);
+    }else{
+        error_reporting(E_ALL);
+    }
+}
 /**
  * Inclui o arquivo de linguagem
  */

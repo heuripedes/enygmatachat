@@ -1,54 +1,54 @@
-Enygmata - chat:
+Enygmata - Chat:
 
 
-$Versão_atual            = 3.2 ;
-$Data_de_publicação      = 15/04/22 ; 
+$Versão_atual            = 3.2.2 ;
+$Data_de_publicação      = 27/04/06 ; 
 $Data_da_primeira_versão = 10/03/06 ;
 $Criador                 = Higor Euripedes (enygmata) ;
 $Email_do_criador[1]     = heuripedes@hotmail.com ;
 $Email_do_criador[2]     = enygmata_16@hotmail.com ;
 
-----Change log
+Change log EC
 
-1.0 - Primeira versão publicada
+1.0     - Primeira versão publicada
 
-1.2 - Retirado o link de atualização
+1.2     - Retirado o link de atualização
 
-1.5 - Adicionado controle de numero de salas
+1.5     - Adicionado controle de numero de salas
 
-1.7 - Aperfeiçoamento de design
+1.7     - Aperfeiçoamento de design
 
-2.0.1 - Correção de administração de sessões
+2.0.1   - Correção de administração de sessões
 
-2.0.2 - Adicionado administração de chat
+2.0.2   - Adicionado administração de chat
 
-2.0.5 - Corrigido o problema de atualização automática: atualização à cada 5 segundos
+2.0.5   - Corrigido o problema de atualização automática: atualização à cada 5 segundos
 
-2.0.7 - Recolocado o link de atualização e adicionado informações de data e hora
+2.0.7   - Recolocado o link de atualização e adicionado informações de data e hora
 
 2.0.7.2 - Função BBCode Parser incluida e modificada
 
 2.0.8.2 - Otimização do sistema de usuário: o usuário só digita seu nome uma vez.
         - Usuário pode fazer logout
 
-2.1 - Melhorada a execução do script
+2.1     - Melhorada a execução do script
 
-2.1.1 - Correçao do erro que adicionava "\" antes de aspas, aspas simples e "\" (addslashes)
+2.1.1   - Correçao do erro que adicionava "\" antes de aspas, aspas simples e "\" (addslashes)
 
-2.1.2 - Login fixo entre as salas
+2.1.2   - Login fixo entre as salas
 
-2.2 - adição de possibilidade de alteração de senha de administrador
-    - adição de possibilidade de execução em modo de depuração
+2.2     - adição de possibilidade de alteração de senha de administrador
+        - adição de possibilidade de execução em modo de depuração
 
-3.0 - Alterada toda a execução dos scripts para maior performance
-    - Limpeza das salas toda vez que o número máximo de mensagens é alcançado
-    - Sistema da armazenamento de login otimizado
-    - Aparência otimizada
-    - Novas funções de execução adicionadas para melhor execução dos scripts
-    - Sistema de exibição de páginas totalmente reconstruido e revisado
-    - Criação instantânea de arquivos de sala
-    - Permição para configuração do chat
-    - Atualização automática a cada 4 segundos
+3.0     - Alterada toda a execução dos scripts para maior performance
+        - Limpeza das salas toda vez que o número máximo de mensagens é alcançado
+        - Sistema da armazenamento de login otimizado
+        - Aparência otimizada
+        - Novas funções de execução adicionadas para melhor execução dos scripts
+        - Sistema de exibição de páginas totalmente reconstruido e revisado
+        - Criação instantânea de arquivos de sala
+        - Permição para configuração do chat
+        - Atualização automática a cada 4 segundos
 
 3.1     - Sistema de administração otimizado(bane/ativa usuários/ip)
         - Arquivos interpretados na hora da exibição (acelera a execução do script)
@@ -64,10 +64,26 @@ $Email_do_criador[2]     = enygmata_16@hotmail.com ;
         - Design pode ser editado pelo usuário
         - Aparência da admnistração mudada
         - Retirada a lista de usuários (temporáriamente)
-		- Configuração do tamanho do nick
-		- Configuração do tamanho do texto
+        - Configuração do tamanho do nick
+        - Configuração do tamanho do texto
+	- Documentação das classes e funções
+
+3.2.2   - Rotinas Ajax adicionadas a exibição de salas (acelera a exibição das mensagens, pois não existe
+		atualização das páginas)
+        - Mensagens particulares
+	- Banimento de usuários restaurado
+	- IP comparado com hash(maior segurança)
+	- 2 Modos de autenticação por COOKIE ou SESSION
+	- 2 Modos de depuração
+	- Compatibilidade com versões anteriores ao PHP 4.1 (utilizando COOKIE para autenticar)
+	- ERROS CORRIGIDOS:
+              *salas.php(49): Classe não era carregada	
+	      *salas.php(52): Chat não era bloqueado
+	      *gerasala.php: Usuário não era banido
+	      *gerasala.php(47): Chat não era bloqueado
+	      *gerasal.php: Nick aparecia com um "A" na frente
+	      *ec.class.php: Qualquer pessoa poderia usar o nick : Adm
+	      *index.php(121): Nick não era mostrado corretamente
+	      *index.php(52): Chat não era bloqueado
 
 Change log---
-
-
-

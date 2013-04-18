@@ -23,8 +23,6 @@
  * @version    CVS: $Id:$
  * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
  * @see        
- * @since      File available since Release 3.2
- * @deprecated File deprecated in Release 3.3
  * @access     public
  */
 
@@ -42,6 +40,11 @@ require_once ('config.php');
  * Inclui o arquivo com a classe principal: Enygmata_Chat
  */
 require_once ('classes/ec.class.php');
+
+/**
+ *Inclui o arquivo de funções adicionais
+ */
+require_once('functions.inc.php');
 
 /**
  * Verifica se o chat está bloqueado
@@ -63,18 +66,25 @@ $ec = ec('',$lng['anonimo'],$lag['admin'],$lng['entrou'],$lng['saiu']);
 /**
  * Verifica se a senha foi enviada e se é correta
  */
-if ($_POST['senha'] == EC_SENHA ) {
-	$_SESSION['senha'] = $_POST['senha'];
+if (md5($HTTP_POST_VARS['senha']) == md5(EC_SENHA) && md5($HTTP_POST_VARS['usuario']) == md5(EC_NOME) ) {
+    if(EC_AUTH != 2) {
+        $_SESSION['senha'] = $HTTP_POST_VARS['senha'];
+        $_SESSION['usuario'] = $HTTP_POST_VARS['usuario'];
+    }else{
+        $HTTP_COOKIE_VARS['senha'] = $HTTP_POST_VARS['senha'];
+        $HTTP_COOKIE_VARS['usuario'] = $HTTP_POST_VARS['usuario'];
+
+    }
 }
 
 /**
  * Ativa algumas rotinas se $_SESSION['senha'] não for nullo
  */
-if (trim($_SESSION['senha'])) {
+if (trim($_SESSION['senha']) || trim($HTTP_COOKIE_VARS['senha'])) {
     /**
     * Se a limpeza de arquivos for solicitada a faça
     */
-    if ($_GET['limpa_arq'] == 1) {
+    if ($HTTP_GET_VARS['limpa_arq'] == 1) {
         $d = 'texto';
         $d = opendir($d);
         while($e = readdir($d) ) {
@@ -86,12 +96,29 @@ if (trim($_SESSION['senha'])) {
     /**
     * Se o logout for solicitado o faça
     */
-    if ($_GET['out'] == 1) {
+    if ($HTTP_GET_VARS['out'] == 1) {
+        $_SESSION['usuario'] = NULL;
         $_SESSION['senha'] = NULL;
+        $HTTP_COOKIE_VARS['usuario'] = NULL;
+        $HTTP_COOKIE_VARS['senha'] = NULL;
     }
+
+    /**
+     * Se desbloqueio de usuário for solicitado
+     */
+     if(base64_decode($HTTP_GET_VARS['ativar'])) {
+         $ec->ec_un_ban(base64_decode($HTTP_GET_VARS['ativar']));
+     }
+    /**
+     * Se bloqueio de usuário for solicitado
+     */
+     if(base64_decode($HTTP_GET_VARS['desativar'])) {
+         $ec->ec_ban(base64_decode($HTTP_GET_VARS['desativar']));
+     }
+
 }
 
-$ip = $_SERVER['REMOTE_ADDR'];
+$ip = $HTTP_SERVER_VARS['REMOTE_ADDR'];
 
  ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
@@ -118,7 +145,8 @@ Enter the password to see options
 <?php
 if (!trim($_SESSION['senha'])) {
 ?>
-<FORM METHOD=POST ACTION="<?php echo $_SERVER['PHP_SELF'] ?>">
+<FORM METHOD=POST ACTION="<?php echo $HTTP_SERVER_VARS['PHP_SELF'] ?>">
+Usuário/User  : <INPUT TYPE="text" name="usuario"><br>
 Senha/Password: <INPUT TYPE="password" name="senha"> <INPUT TYPE="submit" value="Entrar">
 </FORM>
 <?
@@ -134,7 +162,7 @@ Senha/Password: <INPUT TYPE="password" name="senha"> <INPUT TYPE="submit" value=
     <TABLE width="100%">
     <TR>
     	<TD>Nome/Name:</TD>
-    	<TD><?php echo EC_NOME?>&nbsp;&nbsp; [<A HREF="<?php echo $_SERVER['PHP_SELF'];?>?out=1">Logout</A>]</TD>
+    	<TD><?php echo ucfirst(EC_NOME)?>&nbsp;&nbsp; [<A HREF="<?php echo $HTTP_SERVER_VARS['PHP_SELF'];?>?out=1">Logout</A>]</TD>
     </TR>
     <TR>
     	<TD>E-mail:</TD>
@@ -149,13 +177,22 @@ Senha/Password: <INPUT TYPE="password" name="senha"> <INPUT TYPE="submit" value=
     	<TD><?php echo EC_VERSAO?></TD>
     </TR>
     <TR>
-    	<TD>Seu IP/Your IP:</TD>
-    	<TD><?php echo $ip; ?></TD>
+    	<TD>Idioma do chat/Chat language:</TD>
+    	<TD><?php echo EC_LANG?></TD>
     </TR>
     <TR>
-    	<TD>IP Do servidor/Server IP:</TD>
-    	<TD><?php echo $_SERVER['SERVER_ADDR']; ?></TD>
+    	<TD>Autenticação/Authentication:</TD>
+    	<TD><?php echo (EC_LANG != 2)?'SESSION':'COOKIE'?></TD>
     </TR>
+    <TR>
+    	<TD>IP do servidor/Server IP:</TD>
+    	<TD><?php echo $HTTP_SERVER_VARS['SERVER_ADDR']; ?></TD>
+    </TR>
+     <TR>
+    	<TD>Template:</TD>
+    	<TD><A HREF="<?php echo EC_TPL1?>"><?php echo EC_TPL1?></A></TD>
+    </TR>
+
     <TR>
     	<TD>Numero de salas/Number of rooms:</TD>
     	<TD><?php echo EC_SALAS ?></TD>
@@ -175,10 +212,61 @@ Senha/Password: <INPUT TYPE="password" name="senha"> <INPUT TYPE="submit" value=
 </TR>
 <TR>
 <TD>
-<A HREF="<?php echo $_SERVER['PHP_SELF'] ;?>?limpa_arq=1">Limpar arquivos/Clear files</A>
+<A HREF="<?php echo $HTTP_SERVER_VARS['PHP_SELF'] ;?>?limpa_arq=1">Limpar arquivos/Clear files</A>
 </TD>
 </TR>
 </TABLE>
+
+<TABLE width="100%" class="t">
+<TR>
+	<Th colspan="4">Usuários/Users</Th>
+</TR>
+<TR>
+<TD><U>Nome/Name</U></TD>
+<TD><U>IP</U></TD>
+<TD><U>Status</U></TD>
+<TD><U>Ação/Action</U></TD>
+</TR>
+
+<?php
+/**
+ * Administração de usuários
+ */
+unset($u);
+$u = $ec->ec_ls_online();
+$us = array();
+$ui = array();
+for($i=0;$i<count($u[1]);$i++) {
+    if($u[0][$i] && $u[1][$i]) {
+        if(in_array($u[1][$i],$ui)) {
+        }else{
+            $us[$i] = $u[0][$i];
+            $ui[$i] = $u[1][$i];
+            
+            $sb = $ec->ec_is_ban($ui[$i]);
+            if($sb) {
+                $act = 'Ativar/Enable';
+                $stt = '<FONT COLOR="#ff0000"><B>X</B></FONT>';
+                $uri = 'ativar';
+            }else{
+                $act = 'Desativar/Disable';
+                $stt = '<FONT COLOR="#0000ff"><B>OK</B></FONT>';
+                $uri = 'desativar';
+            }
+            if($ui[$i] == $HTTP_SERVER_VARS['REMOTE_ADDR']) {
+                $act = '</a>Servidor/Server<a>';
+            }
+            echo  '<TR><TD>' . $us[$i] . '</TD><TD>' . $ui[$i] . '</TD>'.
+                '<TD>' . $stt .'</TD><TD><A HREF="' . $PHP_SELF .'?' . $uri . '=' . base64_encode($ui[$i]) .
+                '">' . $act . "</A></TD></TR>\r\n";  
+        }
+        
+   }
+}
+
+?>
+</TABLE>
+
 
 </body></html>
 

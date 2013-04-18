@@ -23,17 +23,35 @@
  * @version    CVS: $Id:$
  * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
  * @see        
- * @since      File available since Release 3.2
- * @deprecated File deprecated in Release 3.3
  * @access     public
  */
 
 /**
- * Função que instancia a classe
+ * Declara os valores das variáveis da classe
+ *
+ * Exemplo de uso:
+ * <code>
+ * require_once('ec.class.php');
+ * 
+ * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
+ *
+ * </code>
+ * @param string $arq      o arquivo de sala atual
+ * @param string $anonimo  a string do usuário anonimo
+ * @param string $admin    a string do admnistrador
+ * @param string $entra    a string de entrada na sala
+ * @param string $sai      a string de saida da sala
+ * 
+ * @return bool  Retorna TRUE em caso de sucesso e FALSE em caso de falha
+ * @throws exceptionclass  [description]
+ *
+ * @access public
+ * @static
+ * @see ec(),Enygmata_chat::start()
  */
 function ec($arq = '',$anonimo = '',$admin = '',$entra = '',$sai = ''){
     $ob = new Enygmata_chat($arq,$anonimo,$admin,$entra,$sai);
-    Return $ob;
+    return $ob;
 }
 
 /**
@@ -50,8 +68,6 @@ function ec($arq = '',$anonimo = '',$admin = '',$entra = '',$sai = ''){
  * @version    CVS: $Id:$
  * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
  * @see        
- * @since      File available since Release 3.2
- * @deprecated File deprecated in Release 3.3
  */
 class Enygmata_chat
 {
@@ -118,8 +134,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see ec(),Enygmata_chat::start()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function Enygmata_chat ($arq = '',$anonimo = '',$admin = '',$entra = '',$sai = '')
 	{
@@ -153,8 +167,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see ec(),Enygmata_chat::Enygmata_chat()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function start ($arq,$anonimo,$admin,$entra,$sai)
 	{
@@ -186,25 +198,16 @@ class Enygmata_chat
      * @access public
      * @static
      * @see 
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_get_num_msgs ()
 	{
         $fr  = $this->ec_ler($this->arq);
-        if (!trim($fr)) {
-            Return false;
+        if (!$fr) {
+            return false;
         }
-        if (!@filesize($this->arq) >= 1) {
-            $n = 1;
-        }
-        else {
-            $n = 0;
-        }
-
         $fr = explode("\n", $fr);
         $fr = @count($fr) - $n;
-        Return $fr;
+        return $fr;
     }
     
     /**
@@ -227,8 +230,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_get_num_msgs()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_get_files_sizes ($num,$pre)
 	{
@@ -258,8 +259,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_smilies()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_bbcode ( $bbcode)
 	{ 
@@ -306,8 +305,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_bbcode()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_smilies ($txt)
 	{
@@ -340,39 +337,37 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_get_msg(),Enymata_chat::ec_msg2();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
-    function ec_msg ($Nick,$Texto,$chk = 1)
+    function ec_msg ($Nick,$Texto)
 	{
-        if ($chk) {
-            if (!$Nick)	{
-                Return false;;
+        if ($Texto) {
+            if($this->ec_is_ban($HTTP_SERVER_VARS['REMOTE_ADDR'])) {
+                return;
             }
+            if($Nick == $this->admin && $HTTP_SERVER_VARS['REMOTE_ADDR'] != $HTTP_SERVER_VARS['SERVER_ADDR']) {
+                return;
+            }
+            $Nick  = $Nick ? $Nick : $this->anonimo;
+            $Nick = $this->ec_bbcode(htmlentities($Nick));
+            $Nick = $this->ec_smilies($Nick);
+            $Texto = $this->ec_bbcode(htmlentities($Texto));
+            $Texto = $this->ec_smilies($Texto);
+            $Nick  = stripslashes($Nick);
+            $Texto = stripslashes($Texto);
+
+           $fr = $this->ec_ler($this->arq);
+            
+            $ip  = $HTTP_SERVER_VARS['REMOTE_ADDR'];	
+            $tpl = $Nick . '<+>' . $ip .'<+>' . $Texto ."\n";
+
+            $fr .= $tpl ;
+           
+            $this->ec_escreve($this->arq,$fr);
+             Return true;
+        }else{
+            return false;
         }
-        
-        $Nick  = $Nick ? $Nick : $this->anonimo;
-        $Nick  = htmlentities($Nick);
-        $Texto = $this->ec_bbcode(htmlentities($Texto));
-        $Texto = $this->ec_smilies($Texto);
-
-        $Texto = wordwrap( $Texto, 52, " ", 1);
-        
-        /*if ($this->ec_is_ban($Nick)) {
-            Return false;;
-        }*/
-
-        $fr = $this->ec_ler($this->arq);
-        
-        $ip  = $_SERVER['REMOTE_ADDR'];	
-        $tpl = $Nick . '<+>' . $ip .'<+>' . $Texto ."\n";
-
-        $fr = $tpl .$fr;
-        $fr = stripslashes($fr);
-
-        $this->ec_escreve($this->arq,$fr);
-
-        Return true;
+       
     }
     
     /**
@@ -395,8 +390,6 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_get_msg(),Enymata_chat::ec_msg();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_msg2 ($texto,$notice)
     {
@@ -422,17 +415,19 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_msg(),Enymata_chat::ec_msg2();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
-    function ec_get_msg ($txt){
+    function ec_get_msg ($txt = ''){
+        if(!$txt) {
+            $txt = $this->ec_ler($this->arq);
+        }
         $msg = explode("\n" , $txt);
+        $msg = array_reverse($msg);
 
         for ($i=0; $i<count($msg); $i++) {
             $msg[$i] = explode('<+>', $msg[$i]);
         }
 
-        Return $msg;
+        return $msg;
     }
 
     /**
@@ -455,17 +450,15 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_escreve(),Enygmata_chat::ec_limpa(),
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_ler ($file)
 	{
-        $fp = @fopen($file, 'rb');
+        $fp = fopen($file, 'rb');
         if (!$fp) {
             Return false;
         }
-        $fr = @fread($fp, @filesize( $file) + 1);
-        @fclose($fp);
+        $fr = fread($fp, @filesize( $file) + 1);
+        fclose($fp);
         return $fr;
     }
 
@@ -490,17 +483,15 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_ler(),Enygmata_chat::ec_limpa()
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_escreve ($file, $oq)
 	{
-        $fp = @fopen($file, 'wb');
+        $fp = fopen($file, 'wb');
         if (!$fp) {
             Return false;
         }
-        @fwrite($fp, $oq);
-        @fclose($fp);
+        fwrite($fp, $oq);
+        fclose($fp);
         Return true;
     }
 
@@ -523,20 +514,25 @@ class Enygmata_chat
      * @access public
      * @static
      * @see Enygmata_chat::ec_unreg_nick();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
      */
     function ec_reg_nick ($nick)
 	{
         if (trim($nick))
         {
-            if (!$_SESSION['nick'] == $nick)
-            {
-                $_COOKIE['nick']  = $nick;
-                $_SESSION['nick'] = $nick;
-                //$this->ec_add_nick ( $_SESSION['nick']);
-                $this->ec_msg ($this->admin,$nick . $this->entra);
-                Return true;
+            if(EC_AUTH != 2) {
+                if (!$_SESSION['nick'] == $nick)
+                {
+                    $_SESSION['nick'] = $nick;
+                    $this->ec_msg ($this->admin,$nick . $this->entra);
+                    Return true;
+                }
+            }else{
+                if (!$HTTP_COOKIE_VARS['nick'] == $nick)
+                {
+                    $HTTP_COOKIE_VARS['nick'] = $nick;
+                    $this->ec_msg ($this->admin,$nick . $this->entra);
+                    Return true;
+                }
             }
         }
     }
@@ -560,18 +556,20 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_reg_nick();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
+     * @see Enygmata_reg_nick()
      */
     function ec_unreg_nick ()
     {
-        if (isset($_SESSION['nick'])) {
-            //$this->ec_rem_nick( $_SESSION['nick']);
-            $this->ec_msg($this->admin,$_SESSION['nick'] . $this->sai);
-            unset($_COOKIE['nick']);
-            unset($_SESSION['nick']);
-            session_destroy();    
+        if(EC_AUTH != 2) {
+            if (isset($_SESSION['nick'])) {
+                $this->ec_msg($this->admin,$_SESSION['nick'] . $this->sai);
+                session_destroy();    
+            }
+        }else{
+            if (isset($HTTP_COOKIE_VARS['nick'])) {
+                $this->ec_msg($this->admin,$HTTP_COOKIE_VARS['nick'] . $this->sai);
+                unset($HTTP_COOKIE_VARS['nick']);
+            }
         }
     }
 
@@ -593,104 +591,160 @@ class Enygmata_chat
      *
      * @access public
      * @static
-     * @see Enygmata_chat::ec_escreve(),ec_ler();
-     * @since Method available since Release 3.2
-     * @deprecated Method deprecated in Release 3.2
+     * @see Enygmata_chat::ec_escreve(),ec_ler()
      */
     function ec_limpa ($arq)
 	{
-        $fp = @fopen($arq, 'wb');
+        $fp = fopen($arq, 'wb');
         if (!$fp) {
             Return false;
         }
-        @fwrite($fp,'');
-        @fclose($fp);
+        fwrite($fp,'');
+        fclose($fp);
         Return true;
     }
 
-    /** 
-Funções não utilizadas nesta versão :
+    /**
+     * Verifica se um determinado IP está banido
+     *
+     * Exemplo de uso:
+     * <code>
+     * require_once('ec.class.php');
+     * 
+     * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
+     * $ec->ec_is_ban($ip);
+     *
+     * </code>
+     * @param string $ip ip do usuário
+     * 
+     * @return bool Returna TRUE em caso se o usuário está banido e FALSE em caso contrário
+     * @throws exceptionclass  [description]
+     *
+     * @access public
+     * @static
+     * @see Enygmata_chat::ec_ban(),Enygmata_chat::ec_un_ban()
+     */
+     function ec_is_ban($ip) {
+         $fnam = 'texto/banidos.txt';
+         
+         if(!@file_exists($fnam) ) {
+             return;
+         }
+         if($ip == $HTTP_SERVER_VARS['SERVER_ADDR']) {
+             return;
+         }
 
-    function ec_banir ($ip_or_nick)
-	{
+         $arq = $this->ec_ler($fnam);
+         if(stristr($arq,$ip)) {
+             return true;
+         }else{
+             return false;
+         }
+     }
+    /**
+     * Desbloqueia usuário
+     *
+     * Exemplo de uso:
+     * <code>
+     * require_once('ec.class.php');
+     * 
+     * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
+     * $ec->ec_un_ban($ip);
+     *
+     * </code>
+     * @param void 
+     * 
+     * @return bool Returna TRUE em caso de sucesso FALSE em caso contrário
+     * @throws exceptionclass  [description]
+     *
+     * @access public
+     * @static
+     * @see Enygmata_chat::ec_is_ban(),Enygmata_chat::ec_ban()
+     */
+     function ec_un_ban($ip) {
+         $sb = $this->ec_is_ban($ip);
+         if($sb) {
+             $l = $this->ec_ler('texto/banidos.txt');
+             $l = str_replace($ip . "<ip>", '',$l);
+             $this->ec_escreve('texto/banidos.txt',$l);
+             return true;
+         }else{
+             return false;
+         }
+     }
+    /**
+     * Bloqueia usuário
+     *
+     * Exemplo de uso:
+     * <code>
+     * require_once('ec.class.php');
+     * 
+     * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
+     * $ec->ec_ban($ip);
+     *
+     * </code>
+     * @param void 
+     * 
+     * @return bool Returna TRUE em caso de sucesso FALSE em caso contrário
+     * @throws exceptionclass  [description]
+     *
+     * @access public
+     * @static
+     * @see Enygmata_chat::ec_is_ban(),Enygmata_chat::ec_un_ban()
+     */
+     function ec_ban($ip) {
+         if($ip && md5($ip) != md5($HTTP_SERVER_VARS['SERVER_ADDR'])) {
+             $l = $this->ec_ler('texto/banidos.txt');
+             if(!strstr($l,$ip)) {
+                 $l .= $ip . "<ip>";
+                 $this->ec_escreve('texto/banidos.txt',$l);
+                 return true;
+             }else{
+                 return false;
+             }
+         }else{
+             return false;
+         }
+     }
 
-        $file = 'texto/banidos.txt';
-        $fr   = $this->ec_ler($file);
+    /**
+     * Lista os usuários online
+     *
+     * Exemplo de uso:
+     * <code>
+     * require_once('ec.class.php');
+     * 
+     * $ec = new Enygmata_chat($arq, $anonimo, $admin, $entra, $sai);
+     * $ec->ec_ls_online();
+     *
+     * </code>
+     * @param void 
+     * 
+     * @return array Returna uma array com os nome dos usuários e FALSE em caso contrário
+     * @throws exceptionclass  [description]
+     *
+     * @access public
+     * @static
+     * @see Enygmata_chat::ec_unreg_nick(),Enygmata_chat::ec_reg_nick()
+     */
+     function ec_ls_online() {
+         for($i=1;$i<EC_SALAS;$i++) {
+             $t .= $this->ec_ler('texto/' . EC_PREFIX . 'sala' . $i . '.txt');
+             
+         }
+            $msg = explode("\n" , $t);
+            $msg = array_reverse($msg);
 
-        if (!strstr( $fr , $ip_or_nick )) {
-            $this->ec_escreve($file, $fr . $ip_or_nick . "\n");
-        }
-    }
-
-    function ec_ativar ($ip_or_nick)
-	{
-        
-        $file = 'texto/banidos.txt';
-        $fr   = $this->ec_ler($file);
-        
-        if (strstr( $fr , $ip_or_nick )) {	
-            $fr = str_replace($ip_or_nick . "\n", '', $fr);
-            $this->ec_escreve($file, $fr);
-        }
-    }
-
-    function ec_is_ban ($ip_or_nick)
-	{
-        
-        $file = 'texto/banidos.txt';
-        $fr   = $this->ec_ler($file);
-
-        if (@strstr( $fr, $ip_or_nick)) {
-            Return true;
-        }
-    }
-
-    function ec_add_nick ($nick)
-	{
-
-        $file = 'texto/usuarios.txt';
-        $fr   = $this->ec_ler($file);
-        
-        if (!strstr( $fr, $nick))
-        {
-            $fr .= $nick . '<+>';
-        }
-        
-        $this->ec_escreve($file, $fr);
-
-    }
-
-    function ec_rem_nick ($nick)
-	{
-        
-        $file =  'texto/usuarios.txt';
-        $fr   = $this->ec_ler($file);
-        $fr   = str_replace($nick . "<+>", '', $fr);
-
-        $this->ec_escreve ( $file, $fr);
-    }
-
-    function ec_list_nick ()
-	{
-        $file = 'texto/usuarios.txt';
-        $fr   = $this->ec_ler ($file);
-        $fr   = explode('<+>', $fr);
-
-        sort($fr);
-        reset($fr);
-
-        for ($i=0; $i<count($fr); $i++) {
-            if ($fr[$i] == '' || $fr[$i] == ' ' || $fr[$i] == "\n") {
-                unset($fr[$i]);
+            for ($i=0; $i<count($msg); $i++) {
+                $msg[$i] = explode('<+>', $msg[$i]);
+                if($msg[$i][1] && $msg[$i][0]) {
+                    $u[0][$i] =  $msg[$i][0];
+                    $u[1][$i] =  $msg[$i][1];
+                }
             }
-        }
 
-        sort($fr);
-        reset($fr);
-
-        Return $fr;
-    }
- */
+         return $u;
+     }
 
 }
 

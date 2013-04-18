@@ -23,9 +23,16 @@
  * @version    CVS: $Id:$
  * @link       http://enygmata.orgfree.com/diretorio/enygmatachat/enygmatachat_3.2.rar
  * @see        
- * @since      File available since Release 3.2
- * @deprecated File deprecated in Release 3.3
  * @access     public
  */
+function ping_server($n = 4,$t = 5)
+{
+    $s = microtime();
+    for($i=0;$i<$n;$i++) {
+        $fp = @fsockopen($HTTP_SERVER_VARS['SERVER_ADDR'], $HTTP_SERVER_VARS['SERVER_PORT'], $errno, $errstr, $t);
+        @fclose($fp);
+    }
+        return microtime() - $s;
+}   
 
 ?>
